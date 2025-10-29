@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ReadingScreen extends StatelessWidget {
-	const ReadingScreen({Key? key}) : super(key: key);
+  const ReadingScreen({super.key});
 
-	@override
-	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(title: const Text('Reading')),
-			body: const Center(child: Text('Reading Screen')),
-		);
-	}
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Reading')),
+      body: const Center(child: Text('Reading Screen')),
+    );
+  }
 }
-

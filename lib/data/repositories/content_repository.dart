@@ -8,6 +8,4 @@ class ContentRepository {
     final res = await _dio.get('/v1/announcement');
     return Announcement.fromJson(res.data);
   }
-
-  // TODO: tambah method untuk fitur PPDB/SISDA/Wawasan dll.
 }
