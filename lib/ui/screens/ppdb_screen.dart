@@ -5,9 +5,16 @@ class PpdbScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final green = const Color(0xFF0C4E1A);
     return Scaffold(
-      appBar: AppBar(title: const Text('PPDB')),
-      body: const Center(child: Text('PPDB Screen')),
+      appBar: AppBar(
+        title: const Text('PPDB'),
+        backgroundColor: green,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Halaman PPDB', style: TextStyle(fontSize: 20)),
+      ),
     );
   }
 }

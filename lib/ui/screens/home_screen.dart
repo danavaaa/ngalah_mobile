@@ -13,10 +13,47 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const _HeaderCloud(),
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [green.withValues(alpha: 0.9), green],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(50),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Image.asset('assets/images/logo_ngalah.png', width: 100),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Ngalah Mobile',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Selamat Datang di Aplikasi Yayasan Darut Taqwa Sengonagung',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
-
-            // 📱 Grid menu utama
+            // Grid menu utama
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -24,69 +61,20 @@ class HomeScreen extends StatelessWidget {
                   crossAxisCount: 3,
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
-                  children: const [
-                    _MenuItem(
-                      label: 'PPDB',
-                      assetPath: 'assets/icons/ppdb.svg',
-                    ),
-                    _MenuItem(
-                      label: 'SISDA',
-                      assetPath: 'assets/icons/sisda.svg',
-                    ),
-                    _MenuItem(
-                      label: 'WAWASAN',
-                      assetPath: 'assets/icons/wawasan.svg',
-                    ),
-                    _MenuItem(
-                      label: 'YASINAN',
-                      assetPath: 'assets/icons/yasinan.svg',
-                    ),
-                    _MenuItem(
-                      label: 'KARYA NGALAH',
-                      assetPath: 'assets/icons/karya.svg',
-                    ),
-                    _MenuItem(
-                      label: 'KHUTBAH',
-                      assetPath: 'assets/icons/khutbah.svg',
-                    ),
-                    _MenuItem(
-                      label: 'JAMALIN',
-                      assetPath: 'assets/icons/jamalin.svg',
-                    ),
-                    _MenuItem(
-                      label: 'AL QUR\'AN',
-                      assetPath: 'assets/icons/quran.svg',
-                    ),
-                    _MenuItem(
-                      label: 'WIRID & DO\'A',
-                      assetPath: 'assets/icons/wirid.svg',
-                    ),
-                    _MenuItem(
-                      label: 'MAULID',
-                      assetPath: 'assets/icons/maulid.svg',
-                    ),
-                    _MenuItem(
-                      label: 'LAINNYA',
-                      assetPath: 'assets/icons/lainnya.svg',
-                    ),
+                  children: [
+                    _buildMenu('PPDB', 'assets/icons/ppdb.svg'),
+                    _buildMenu('SISDA', 'assets/icons/sisda.svg'),
+                    _buildMenu('WAWASAN', 'assets/icons/wawasan.svg'),
+                    _buildMenu('YASINAN', 'assets/icons/yasinan.svg'),
+                    _buildMenu('KARYA NGALAH', 'assets/icons/karya.svg'),
+                    _buildMenu('KHUTBAH', 'assets/icons/khutbah.svg'),
+                    _buildMenu('JAMALIN', 'assets/icons/jamalin.svg'),
+                    _buildMenu('AL QUR\'AN', 'assets/icons/quran.svg'),
+                    _buildMenu('WIRID & DO\'A', 'assets/icons/wirid.svg'),
+                    _buildMenu('MAULID', 'assets/icons/maulid.svg'),
+                    _buildMenu('LAINNYA', 'assets/icons/lainnya.svg'),
                   ],
                 ),
-              ),
-            ),
-
-            // ⚙️ Bottom Navigation Bar
-            Container(
-              color: green,
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _BottomItem(icon: Icons.home, label: 'BERANDA', active: true),
-                  _BottomItem(icon: Icons.menu_book, label: 'BACAAN'),
-                  _BottomItem(icon: Icons.person, label: 'SISDA'),
-                  _BottomItem(icon: Icons.group_add, label: 'PPDB'),
-                  _BottomItem(icon: Icons.settings, label: 'SETTING'),
-                ],
               ),
             ),
           ],
@@ -94,96 +82,8 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class _HeaderCloud extends StatelessWidget {
-  const _HeaderCloud();
-
-  @override
-  Widget build(BuildContext context) {
-    final green = const Color(0xFF0C4E1A);
-
-    return Stack(
-      children: [
-        Container(
-          height: 260,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [green.withOpacity(0.9), green],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-        ClipPath(
-          clipper: _CloudClipper(),
-          child: Container(height: 100, color: Colors.white),
-        ),
-        Positioned(
-          top: 70,
-          left: 0,
-          right: 0,
-          child: Column(
-            children: [
-              Image.asset('assets/images/logo_ngalah.png', width: 100),
-              const SizedBox(height: 10),
-              const Text(
-                'Ngalah Mobile',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Selamat Pagi,\nSelamat Datang di Aplikasi Yayasan Darut Taqwa Sengonagung',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CloudClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, 0);
-    path.lineTo(0, size.height - 20);
-    path.quadraticBezierTo(
-      size.width / 4,
-      size.height,
-      size.width / 2,
-      size.height - 30,
-    );
-    path.quadraticBezierTo(
-      size.width * 3 / 4,
-      size.height - 60,
-      size.width,
-      size.height - 20,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class _MenuItem extends StatelessWidget {
-  final String label;
-  final String assetPath;
-
-  const _MenuItem({required this.label, required this.assetPath});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMenu(String label, String assetPath) {
     final green = const Color(0xFF0C4E1A);
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -202,10 +102,7 @@ class _MenuItem extends StatelessWidget {
             child: SvgPicture.asset(
               assetPath,
               fit: BoxFit.contain,
-              width: 32,
-              height: 32,
-              color: null, // tampilkan warna asli SVG
-              semanticsLabel: label,
+              colorFilter: null,
             ),
           ),
           const SizedBox(height: 8),
@@ -220,36 +117,6 @@ class _MenuItem extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BottomItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _BottomItem({
-    required this.icon,
-    required this.label,
-    this.active = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: active ? Colors.white : Colors.white70, size: 24),
-        Text(
-          label,
-          style: TextStyle(
-            color: active ? Colors.white : Colors.white70,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
     );
   }
 }

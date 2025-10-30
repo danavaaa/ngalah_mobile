@@ -5,9 +5,16 @@ class ReadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final green = const Color(0xFF0C4E1A);
     return Scaffold(
-      appBar: AppBar(title: const Text('Reading')),
-      body: const Center(child: Text('Reading Screen')),
+      appBar: AppBar(
+        title: const Text('Bacaan'),
+        backgroundColor: green,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Halaman Bacaan', style: TextStyle(fontSize: 20)),
+      ),
     );
   }
 }

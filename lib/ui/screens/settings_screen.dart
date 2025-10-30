@@ -5,9 +5,16 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final green = const Color(0xFF0C4E1A);
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings Screen')),
+      appBar: AppBar(
+        title: const Text('Pengaturan'),
+        backgroundColor: green,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Halaman Pengaturan', style: TextStyle(fontSize: 20)),
+      ),
     );
   }
 }
