@@ -8,7 +8,10 @@ class ReadingScreen extends StatelessWidget {
     final green = const Color(0xFF0C4E1A);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bacaan'),
+        title: const Text(
+          'Bacaan',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: green,
         foregroundColor: Colors.white,
       ),

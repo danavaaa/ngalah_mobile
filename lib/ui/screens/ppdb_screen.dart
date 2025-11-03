@@ -8,7 +8,10 @@ class PpdbScreen extends StatelessWidget {
     final green = const Color(0xFF0C4E1A);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PPDB'),
+        title: const Text(
+          'PPDB',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: green,
         foregroundColor: Colors.white,
       ),

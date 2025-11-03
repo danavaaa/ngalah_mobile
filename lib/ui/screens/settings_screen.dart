@@ -6,9 +6,13 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final green = const Color(0xFF0C4E1A);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan'),
+        title: const Text(
+          'Pengaturan',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: green,
         foregroundColor: Colors.white,
       ),
