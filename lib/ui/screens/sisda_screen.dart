@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class SisdaScreen extends StatelessWidget {
-  const SisdaScreen({Key? key}) : super(key: key);
+  SisdaScreen({Key? key}) : super(key: key);
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +60,48 @@ class SisdaScreen extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 30),
+
+              // Card login
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Khusus Wali Santri/Siswa',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Pastikan Nomor WhatsApp telah terdaftar di sistem kami\n'
+                        '(memperoleh tagihan di setiap bulannya)\n\n'
+                        'Apabila nomor belum terdaftar, silahkan menghubungi Customer Service kami.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                      SizedBox(height: 25),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
             ],
           ),
         ),
