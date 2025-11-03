@@ -1,11 +1,45 @@
 import 'package:flutter/material.dart';
 
-class SisdaScreen extends StatelessWidget {
-  SisdaScreen({Key? key}) : super(key: key);
+class SisdaScreen extends StatefulWidget {
+  const SisdaScreen({Key? key}) : super(key: key);
 
+  @override
+  _SisdaScreenState createState() => _SisdaScreenState();
+}
+
+class _SisdaScreenState extends State<SisdaScreen> {
   final _formKey = GlobalKey<FormState>();
   final _idController = TextEditingController();
   final _waController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _waController.dispose();
+    super.dispose();
+  }
+
+  void _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      // Simulasi permintaan jaringan / proses login
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Terjadi kesalahan: $e')));
+    } finally {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,6 +192,39 @@ class SisdaScreen extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 25),
+
+                      // Tombol Login
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: _isLoading ? null : _login,
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    "LOGIN",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
