@@ -5,6 +5,7 @@ class SisdaScreen extends StatelessWidget {
 
   final _formKey = GlobalKey<FormState>();
   final _idController = TextEditingController();
+  final _waController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +127,37 @@ class SisdaScreen extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 16),
+
+                      // Nomor WhatsApp
+                      TextFormField(
+                        controller: _waController,
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.phone,
+                            color: Colors.white,
+                          ),
+                          hintText: "Nomor WhatsApp",
+                          filled: true,
+                          fillColor: Colors.white,
+                          prefixIconColor: green, // warna ikon
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(40),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Masukkan nomor WhatsApp";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 25),
                     ],
                   ),
                 ),
