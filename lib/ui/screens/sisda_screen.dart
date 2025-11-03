@@ -4,6 +4,7 @@ class SisdaScreen extends StatelessWidget {
   SisdaScreen({Key? key}) : super(key: key);
 
   final _formKey = GlobalKey<FormState>();
+  final _idController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -13,12 +14,12 @@ class SisdaScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: green,
-        foregroundColor: Colors.white, // ✅ teks dan ikon AppBar jadi putih
+        foregroundColor: Colors.white, // teks dan ikon AppBar jadi putih
         title: const Text(
           'Sisda',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white, // ✅ teks title putih
+            color: Colors.white, // teks title putih
           ),
         ),
         leading: IconButton(
@@ -36,9 +37,8 @@ class SisdaScreen extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // ✅ vertikal tengah
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // ✅ horizontal tengah
+            mainAxisAlignment: MainAxisAlignment.center, // vertikal tengah
+            crossAxisAlignment: CrossAxisAlignment.center, // horizontal tengah
             children: [
               // Judul
               const Text(
@@ -93,15 +93,44 @@ class SisdaScreen extends StatelessWidget {
                         'Pastikan Nomor WhatsApp telah terdaftar di sistem kami\n'
                         '(memperoleh tagihan di setiap bulannya)\n\n'
                         'Apabila nomor belum terdaftar, silahkan menghubungi Customer Service kami.',
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.center, // teks di tengah
                         style: TextStyle(fontSize: 14, color: Colors.black87),
                       ),
-                      SizedBox(height: 25),
+                      SizedBox(height: 25), // Jarak sebelum tombol
+                      // ID Yayasan
+                      TextFormField(
+                        controller: _idController,
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(
+                            Icons.account_circle_rounded, // ikon user
+                            color: Colors.white,
+                          ),
+                          hintText: "ID Yayasan",
+                          filled: true,
+                          fillColor: Colors.white,
+                          prefixIconColor: green,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(40),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Masukkan ID Yayasan";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 30), // Jarak bawah card
             ],
           ),
         ),
