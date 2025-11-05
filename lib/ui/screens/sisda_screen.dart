@@ -79,6 +79,7 @@ class _SisdaScreenState extends State<SisdaScreen> {
               const Text(
                 'SISDA',
                 textAlign: TextAlign.center,
+
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w900,
@@ -225,6 +226,25 @@ class _SisdaScreenState extends State<SisdaScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
+                      // Hubungi CS
+                      TextButton(
+                        onPressed: () {
+                          // nanti bisa diarahkan ke WhatsApp API
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: green.withOpacity(0.2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          "Hubungi Customer Service",
+                          style: TextStyle(
+                            color: Color(0xFF0C4E1A),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -4,9 +4,9 @@ class Announcement {
   final DateTime date;
 
   Announcement({
-    required this.title,
-    required this.greeting,
-    required this.date,
+    required this.title, // Judul pengumuman
+    required this.greeting, // Salam pembuka
+    required this.date, // Tanggal pengumuman
   });
 
   factory Announcement.fromJson(Map<String, dynamic> j) => Announcement(
