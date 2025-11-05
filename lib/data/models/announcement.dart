@@ -11,7 +11,9 @@ class Announcement {
 
   factory Announcement.fromJson(Map<String, dynamic> j) => Announcement(
     title: j['title'] ?? '',
-    greeting: j['greeting'] ?? '',
-    date: DateTime.tryParse(j['date'] ?? '') ?? DateTime.now(),
+    greeting: j['greeting'] ?? '', // Salam pembuka
+    date:
+        DateTime.tryParse(j['date'] ?? '') ??
+        DateTime.now(), // Tanggal pengumuman
   );
 }

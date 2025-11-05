@@ -4,15 +4,20 @@ import 'auth_storage.dart';
 
 class ApiClient {
   ApiClient._();
-  static final ApiClient I = ApiClient._();
+  static final ApiClient I = ApiClient._(); //
 
   late final Dio dio = Dio(
       BaseOptions(
+        // konfigurasi dasar untuk Dio
         baseUrl: AppConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 20),
-        responseType: ResponseType.json,
-        headers: {'Accept': 'application/json'},
+        connectTimeout: const Duration(seconds: 20), // waktu tunggu koneksi
+        receiveTimeout: const Duration(
+          seconds: 20,
+        ), // waktu tunggu penerimaan data
+        responseType: ResponseType.json, // tipe respons yang diharapkan
+        headers: {
+          'Accept': 'application/json',
+        }, // header standar untuk semua permintaan
       ),
     )
     ..interceptors.add(
@@ -25,9 +30,8 @@ class ApiClient {
           return handler.next(options);
         },
         onError: (e, handler) {
-          // logging sederhana
-          // print('API ERROR: ${e.response?.statusCode} ${e.message}');
-          return handler.next(e);
+          // menangani error
+          return handler.next(e); // teruskan error
         },
       ),
     );

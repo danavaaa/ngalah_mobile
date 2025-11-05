@@ -10,9 +10,9 @@ class NgalahApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ngalah Mobile',
       debugShowCheckedModeBanner: false,
-      theme: appTheme,
-      initialRoute: AppRoutes.splash,
-      onGenerateRoute: AppRoutes.onGenerate,
+      theme: appTheme, // menggunakan tema yang telah ditentukan
+      initialRoute: AppRoutes.splash, // rute awal aplikasi
+      onGenerateRoute: AppRoutes.onGenerate, // mengelola navigasi rute
     );
   }
 }

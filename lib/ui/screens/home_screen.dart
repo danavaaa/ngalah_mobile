@@ -6,34 +6,53 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final green = const Color(0xFF0C4E1A);
+    // Home Screen UI
+    final green = const Color(0xFF0C4E1A); // warna hijau khas aplikasi
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
+        // memastikan UI tidak tertutup area aman perangkat
         child: Column(
+          // tata letak kolom vertikal
           children: [
             // Header
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+              width: double.infinity, // lebar penuh layar
+              padding: const EdgeInsets.symmetric(
+                vertical: 40,
+                horizontal: 16,
+              ), // padding vertikal dan horizontal
               decoration: BoxDecoration(
+                // dekorasi latar belakang
                 gradient: LinearGradient(
-                  colors: [green.withValues(alpha: 0.9), green],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  // gradasi warna
+                  colors: [
+                    green.withValues(alpha: 0.9),
+                    green,
+                  ], // gradasi hijau
+                  begin: Alignment.topCenter, // mulai dari atas
+                  end: Alignment.bottomCenter, // berakhir di bawah
                 ),
                 borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(50),
+                  // sudut melengkung di bagian bawah
+                  bottom: Radius.circular(50), // radius lengkung 50
                 ),
               ),
               child: Column(
+                // kolom untuk logo dan teks
                 children: [
-                  Image.asset('assets/images/logo_ngalah.png', width: 100),
-                  const SizedBox(height: 12),
+                  // isi header
+                  Image.asset(
+                    'assets/images/logo_ngalah.png',
+                    width: 100,
+                  ), // logo aplikasi
+                  const SizedBox(height: 12), // jarak vertikal
                   const Text(
+                    // judul aplikasi
                     'Ngalah Mobile',
                     style: TextStyle(
+                      // gaya teks
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -41,10 +60,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Text(
+                    // teks sambutan
                     'Selamat Datang di Aplikasi Yayasan Darut Taqwa Sengonagung',
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.center, // rata tengah
                     style: TextStyle(
-                      color: Colors.white,
+                      // gaya teks
+                      color: Colors.white, // warna putih
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -55,13 +76,19 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
             // Grid menu utama
             Expanded(
+              // mengisi ruang yang tersisa
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                // padding horizontal
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                ), // padding horizontal
                 child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
+                  // grid dengan jumlah kolom tetap
+                  crossAxisCount: 3, // 3 kolom
+                  mainAxisSpacing: 20, // jarak vertikal antar item
+                  crossAxisSpacing: 20, // jarak horizontal antar item
                   children: [
+                    // daftar menu
                     _buildMenu('PPDB', 'assets/icons/ppdb.svg'),
                     _buildMenu('SISDA', 'assets/icons/sisda.svg'),
                     _buildMenu('WAWASAN', 'assets/icons/wawasan.svg'),
@@ -84,31 +111,39 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMenu(String label, String assetPath) {
-    final green = const Color(0xFF0C4E1A);
+    // widget menu individual
+    final green = const Color(0xFF0C4E1A); // warna hijau khas aplikasi
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () {},
+      // membuat area yang dapat ditekan
+      borderRadius: BorderRadius.circular(16), // sudut melengkung
+      onTap: () {}, // aksi saat ditekan
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        // tata letak vertikal
+        mainAxisSize: MainAxisSize.min, // ukuran utama sesuai konten
         children: [
+          // isi menu
           Container(
+            // wadah ikon
             width: 70,
             height: 70,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12), // padding di dalam wadah
             decoration: BoxDecoration(
+              // dekorasi wadah
               color: green.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16), // sudut melengkung
             ),
             child: SvgPicture.asset(
-              assetPath,
-              fit: BoxFit.contain,
-              colorFilter: null,
+              // ikon menu
+              assetPath, // path ikon
+              fit: BoxFit.contain, // menyesuaikan ukuran
+              colorFilter: null, // tidak ada filter warna
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 8), // jarak vertikal
           Text(
-            label,
-            textAlign: TextAlign.center,
+            // teks label menu
+            label, // teks label
+            textAlign: TextAlign.center, // rata tengah
             style: TextStyle(
               color: green,
               fontSize: 12,

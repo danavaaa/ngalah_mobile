@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 
 class ReadingScreen extends StatelessWidget {
+  // Reading Screen
   const ReadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final green = const Color(0xFF0C4E1A);
+    final green = const Color(0xFF0C4E1A); // warna hijau khas
     return Scaffold(
+      // tampilan dasar
       appBar: AppBar(
+        // bilah aplikasi
         title: const Text(
+          // Judul bilah aplikasi
           'Bacaan',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: green,
-        foregroundColor: Colors.white,
+        backgroundColor: green, // warna latar belakang hijau
+        foregroundColor: Colors.white, // warna teks dan ikon putih
       ),
       body: const Center(
-        child: Text('Halaman Bacaan', style: TextStyle(fontSize: 20)),
+        child: Text(
+          'Halaman Bacaan',
+          style: TextStyle(fontSize: 20),
+        ), // teks di tengah halaman
       ),
     );
   }

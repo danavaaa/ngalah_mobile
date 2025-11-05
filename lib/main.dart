@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // ✅ Tambahkan ini
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/reading_screen.dart';
 import 'ui/screens/sisda_screen.dart';
 import 'ui/screens/ppdb_screen.dart';
 import 'ui/screens/settings_screen.dart';
+import 'providers/sisda_provider.dart'; // Provider yang baru kamu buat
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NgalahApp());
+  runApp(const NgalahApp()); // Menjalankan aplikasi NgalahApp
 }
 
 class NgalahApp extends StatelessWidget {
@@ -16,19 +18,29 @@ class NgalahApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Ngalah Mobile',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF0C4E1A),
-        fontFamily: 'Poppins',
+    // Bungkus MaterialApp dengan MultiProvider
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => SisdaProvider(),
+        ), // daftar provider
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Ngalah Mobile', // Judul aplikasi
+        theme: ThemeData(
+          // Tema aplikasi
+          primaryColor: const Color(0xFF0C4E1A), // warna hijau khas
+          fontFamily: 'Poppins',
+        ),
+        home: const SplashScreen(), // Halaman awal aplikasi
       ),
-      home: const SplashScreen(),
     );
   }
 }
 
 class MainNavigation extends StatefulWidget {
+  // navigasi utama
   const MainNavigation({super.key});
 
   @override
@@ -36,9 +48,10 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
+  int _currentIndex = 0; // indeks layar saat ini
 
   final List<Widget> _screens = [
+    // daftar layar
     HomeScreen(),
     ReadingScreen(),
     SisdaScreen(),
@@ -48,21 +61,31 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final green = const Color(0xFF0C4E1A);
+    //  tampilan
+    final green = const Color(0xFF0C4E1A); // warna hijau khas
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      // tampilan dasar
+      body: _screens[_currentIndex], // tampilkan layar sesuai indeks saat ini
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        backgroundColor: green,
-        type: BottomNavigationBarType.fixed,
+        // bilah navigasi bawah
+        currentIndex: _currentIndex, // indeks saat ini
+        selectedItemColor: Colors.white, // warna item terpilih putih
+        unselectedItemColor:
+            Colors.white70, // warna item tidak terpilih putih transparan
+        backgroundColor: green, // warna latar belakang hijau
+        type: BottomNavigationBarType.fixed, // tipe bilah navigasi tetap
         onTap: (index) {
-          setState(() => _currentIndex = index);
+          setState(
+            () => _currentIndex = index,
+          ); // perbarui indeks saat item ditekan
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'BERANDA'),
+          // item bilah navigasi
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'BERANDA',
+          ), // ikon dan label Beranda
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'BACAAN'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'SISDA'),
           BottomNavigationBarItem(icon: Icon(Icons.group_add), label: 'PPDB'),
