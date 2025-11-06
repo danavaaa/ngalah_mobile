@@ -143,10 +143,129 @@ class _SisdaScreenState extends State<SisdaScreen> {
             );
           },
         );
+      } else {
+        // login gagal + reset input field
+        _idController.clear(); // bersihkan ID
+        _waController.clear(); // bersihkan WA
+
+        showDialog(
+          // pop-up gagal
+          context: context, // konteks saat ini
+          builder: (context) {
+            // buat dialog
+            return Dialog(
+              // dialog modern
+              shape: RoundedRectangleBorder(
+                // bentuk dialog
+                borderRadius: BorderRadius.circular(20), // sudut melengkung
+              ),
+              backgroundColor: Colors.transparent, // latar belakang transparan
+              child: Container(
+                // wadah isi dialog
+                padding: const EdgeInsets.all(20), // padding dalam
+                decoration: BoxDecoration(
+                  // dekorasi kotak
+                  color: Colors.white, // latar belakang putih
+                  borderRadius: BorderRadius.circular(20), //  sudut melengkung
+                  boxShadow: [
+                    // bayangan kotak
+                    BoxShadow(
+                      // bayangan
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8, // ketebalan bayangan
+                      offset: const Offset(0, 3), // posisi bayangan
+                    ),
+                  ],
+                ),
+                child: Column(
+                  // kolom isi dialog
+                  mainAxisSize: MainAxisSize.min, //  sesuaikan ukuran
+                  children: [
+                    //  isi kolom
+                    const Icon(
+                      // ikon gagal
+                      Icons.error_rounded, // ikon error
+                      color: Colors.redAccent,
+                      size: 70,
+                    ),
+                    const SizedBox(height: 12), // jarak vertikal
+                    const Text(
+                      // teks gagal
+                      "Login Gagal!",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                    const SizedBox(height: 10), // jarak vertikal
+                    const Text(
+                      //  teks penjelasan
+                      "ID Yayasan atau Nomor WhatsApp salah.\nSilakan periksa kembali.",
+                      textAlign: TextAlign.center, // teks di tengah
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 20), // jarak vertikal
+                    ElevatedButton(
+                      // tombol coba lagi
+                      onPressed: () => Navigator.pop(context), // tutup dialog
+                      style: ElevatedButton.styleFrom(
+                        // gaya tombol
+                        backgroundColor: Colors.redAccent, // warna merah
+                        shape: RoundedRectangleBorder(
+                          // bentuk tombol
+                          borderRadius: BorderRadius.circular(
+                            12,
+                          ), // sudut melengkung
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          // padding tombol
+                          horizontal: 40, // padding horizontal
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        // teks tombol
+                        "Coba Lagi",
+                        style: TextStyle(
+                          // gaya teks
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       }
+    } catch (e) {
+      // tangani kesalahan tak terduga
+      if (!mounted) return; //  pastikan widget masih ada
+      showDialog(
+        // tampilkan dialog kesalahan
+        context: context, // konteks saat ini
+        builder: // buat dialog
+            (context) => AlertDialog(
+              // dialog standar
+              title: const Text("Terjadi Kesalahan "), // judul dialog
+              content: Text("Pesan: $e"), // isi dialog
+              actions: [
+                // aksi dialog
+                TextButton(
+                  // tombol tutup
+                  onPressed: () => Navigator.pop(context), // tutup dialog
+                  child: const Text("Tutup"), // teks tombol
+                ),
+              ],
+            ),
+      );
     } finally {
-      // selalu jalankan
-      if (mounted) setState(() => _isLoading = false); // berhenti loading
+      // hentikan loading
+      if (!mounted) return; // pastikan widget masih ada
+      setState(() => _isLoading = false); // berhenti loading
     }
   }
 
