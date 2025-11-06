@@ -18,8 +18,10 @@ class _SisdaScreenState extends State<SisdaScreen> {
 
   @override
   void dispose() {
-    _idController.dispose();
-    _waController.dispose();
+    // metode dispose
+    // bersihkan controller saat dispose
+    _idController.dispose(); // bersihkan controller ID
+    _waController.dispose(); // bersihkan controller WA
     super.dispose();
   }
 
@@ -29,50 +31,122 @@ class _SisdaScreenState extends State<SisdaScreen> {
 
     setState(() => _isLoading = true); // mulai loading
     try {
-      // Ambil provider
-      final sisdaProvider = Provider.of<SisdaProvider>(context, listen: false);
-
-      // Cek login dengan data dummy
+      final sisdaProvider = Provider.of<SisdaProvider>(
+        context,
+        listen: false,
+      ); // akses provider
       final success = sisdaProvider.login(
-        // metode login
-        _idController.text.trim(), // ambil ID Yayasan
-        _waController.text.trim(), // ambil Nomor WhatsApp
+        // panggil metode login
+        _idController.text.trim(), // ID Yayasan
+        _waController.text.trim(), // Nomor WhatsApp
       );
 
-      await Future.delayed(const Duration(seconds: 1)); // efek loading
+      await Future.delayed(const Duration(seconds: 1)); // efek loading kecil
 
-      if (!mounted) return;
+      if (!mounted) return; // pastikan widget masih ada
 
       if (success) {
-        // jika login berhasil
-        ScaffoldMessenger.of(context).showSnackBar(
-          // tampilkan pesan sukses
-          const SnackBar(
-            content: Text('Login berhasil (data dummy)'),
-          ), // pesan sukses
-        );
-      } else {
-        // jika login gagal
-        ScaffoldMessenger.of(context).showSnackBar(
-          // tampilkan pesan gagal
-          const SnackBar(
-            content: Text('ID Yayasan atau Nomor WA salah'),
-          ), // pesan gagal
+        //  login sukses
+        showDialog(
+          //  Pop-up  sukses
+          context: context,
+          barrierDismissible: false, // tidak bisa ditutup sembarangan
+          builder: (context) {
+            // buat dialog
+            return Dialog(
+              // dialog modern
+              shape: RoundedRectangleBorder(
+                // bentuk dialog
+                borderRadius: BorderRadius.circular(20), // sudut melengkung
+              ),
+              backgroundColor: Colors.transparent, // latar belakang transparan
+              child: Container(
+                // wadah isi dialog
+                padding: const EdgeInsets.all(20), // padding dalam
+                decoration: BoxDecoration(
+                  // dekorasi kotak
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20), // sudut melengkung
+                  boxShadow: [
+                    // bayangan kotak
+                    BoxShadow(
+                      // bayangan
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8, // ketebalan bayangan
+                      offset: const Offset(0, 3), // posisi bayangan
+                    ),
+                  ],
+                ),
+                child: Column(
+                  // kolom isi dialog
+                  mainAxisSize: MainAxisSize.min, // sesuaikan ukuran
+                  children: [
+                    // isi kolom
+                    const Icon(
+                      //  ikon sukses
+                      Icons.check_circle_rounded, // ikon centang
+                      color: Color(0xFF0C4E1A), // warna hijau
+                      size: 70,
+                    ),
+                    const SizedBox(height: 12), // jarak vertikal
+                    const Text(
+                      // teks sukses
+                      "Login Berhasil!",
+                      style: TextStyle(
+                        //  gaya teks
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0C4E1A),
+                      ),
+                    ),
+                    const SizedBox(height: 10), // jarak vertikal
+                    const Text(
+                      // deskripsi sukses
+                      "Selamat datang di Sistem Informasi Santri/Siswa (Sisda).\nAnda berhasil login menggunakan data dummy.",
+                      textAlign: TextAlign.center, // teks di tengah
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 20), // jarak vertikal
+                    ElevatedButton(
+                      // tombol OK
+                      onPressed: () {
+                        // tutup dialog
+                        Navigator.pop(context);
+                        // Navigasi ke halaman dashboard bisa ditaruh di sini
+                      },
+                      style: ElevatedButton.styleFrom(
+                        // gaya tombol
+                        backgroundColor: const Color(0xFF0C4E1A), // warna hijau
+                        shape: RoundedRectangleBorder(
+                          // bentuk tombol
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          // padding tombol
+                          horizontal: 40,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        // teks tombol
+                        "OK",
+                        style: TextStyle(
+                          //  gaya teks
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       }
-    } catch (e) {
-      // tangkap kesalahan
-      if (!mounted) return; // pastikan widget masih terpasang
-      ScaffoldMessenger.of(
-        // tampilkan pesan kesalahan
-        context,
-      ).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan: $e')),
-      ); // pesan kesalahan
     } finally {
-      //  akhirnya
-      if (!mounted) return; // pastikan widget masih terpasang
-      setState(() => _isLoading = false); // loading selesai
+      // selalu jalankan
+      if (mounted) setState(() => _isLoading = false); // berhenti loading
     }
   }
 
