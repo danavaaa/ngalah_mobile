@@ -1,6 +1,7 @@
 import 'package:provider/provider.dart';
 import '../../providers/sisda_provider.dart';
 import 'package:flutter/material.dart';
+import 'sisda_dashboard_screen.dart';
 
 class SisdaScreen extends StatefulWidget {
   // Sisda Screen
@@ -110,10 +111,17 @@ class _SisdaScreenState extends State<SisdaScreen> {
                     ElevatedButton(
                       // tombol OK
                       onPressed: () {
-                        // tutup dialog
-                        Navigator.pop(context);
-                        // Navigasi ke halaman dashboard bisa ditaruh di sini
+                        Navigator.pop(context); // Tutup pop-up
+                        Navigator.pushReplacement(
+                          // pindah layar
+                          context, // konteks saat ini
+                          MaterialPageRoute(
+                            // rute material
+                            builder: (context) => const SisdaDashboardScreen(),
+                          ),
+                        );
                       },
+
                       style: ElevatedButton.styleFrom(
                         // gaya tombol
                         backgroundColor: const Color(0xFF0C4E1A), // warna hijau
