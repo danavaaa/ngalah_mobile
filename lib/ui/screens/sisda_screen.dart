@@ -1,7 +1,7 @@
 import 'package:provider/provider.dart';
 import '../../providers/sisda_provider.dart';
 import 'package:flutter/material.dart';
-import 'sisda_dashboard_screen.dart';
+import 'otp_screen.dart';
 
 class SisdaScreen extends StatefulWidget {
   // Sisda Screen
@@ -113,11 +113,17 @@ class _SisdaScreenState extends State<SisdaScreen> {
                       onPressed: () {
                         Navigator.pop(context); // Tutup pop-up
                         Navigator.pushReplacement(
-                          // pindah layar
+                          // pindah ke OTP screen
                           context, // konteks saat ini
                           MaterialPageRoute(
-                            // rute material
-                            builder: (context) => const SisdaDashboardScreen(),
+                            // buat rute material
+                            builder:
+                                (context) => OtpScreen(
+                                  // pindah ke OTP screen
+                                  phoneNumber:
+                                      _waController
+                                          .text, // kirim nomor WA ke OTP screen
+                                ),
                           ),
                         );
                       },
