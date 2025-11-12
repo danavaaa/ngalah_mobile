@@ -1,162 +1,150 @@
-import 'dart:async'; // Untuk Timer
-import 'package:flutter/material.dart'; // Flutter framework
-import 'sisda_dashboard_screen.dart'; // Impor layar dashboard Sisda
+import 'dart:async';
+import 'package:flutter/material.dart';
 
 class OtpScreen extends StatefulWidget {
-  // Layar OTP
-  final String phoneNumber; // Nomor telepon pengguna
+  final String phoneNumber; // nomor WA dari halaman login
 
-  const OtpScreen({super.key, required this.phoneNumber}); // Konstruktor
+  const OtpScreen({super.key, required this.phoneNumber});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState(); // Buat state layar OTP
+  State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  // State layar OTP
   final TextEditingController _otpController =
-      TextEditingController(); // Kontroler input OTP
-  final String _dummyOtp = "123456"; // OTP dummy untuk verifikasi
-  bool _isLoading = false; // Status loading
-  int _timerCount = 60; // Hitung mundur timer
-  late Timer _timer; // Timer untuk hitung mundur
+      TextEditingController(); // kontrol input OTP
+  int _timerCount = 60; // waktu hitung mundur
+  late Timer _timer; // timer
 
   @override
   void initState() {
-    // Inisialisasi state
-    super.initState(); // Panggil inisialisasi state superclass
-    _startTimer(); // Mulai timer
+    super.initState();
+    _startTimer(); // mulai timer saat layar dibuka
   }
 
   @override
   void dispose() {
-    // Dispose state
-    _timer.cancel(); // Batalkan timer
-    _otpController.dispose(); // Dispose kontroler OTP
-    super.dispose(); // Panggil dispose superclass
+    _timer.cancel(); // hentikan timer saat keluar
+    _otpController.dispose(); // bersihkan controller
+    super.dispose();
   }
 
   void _startTimer() {
-    // Mulai timer hitung mundur
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // Setiap detik
       if (_timerCount > 0) {
-        // Jika hitung mundur belum selesai
-        setState(() => _timerCount--); // Kurangi hitung mundur
+        setState(() => _timerCount--); // kurangi tiap detik
       } else {
-        // Jika hitung mundur selesai
-        timer.cancel(); // Batalkan timer
+        timer.cancel(); // stop timer
       }
     });
   }
 
-  void _resendOtp() {
-    // Kirim ulang OTP
-    setState(() => _timerCount = 60); // Reset hitung mundur
-    _startTimer(); // Mulai ulang timer
-    ScaffoldMessenger.of(context).showSnackBar(
-      // Tampilkan snackbar
-      const SnackBar(
-        content: Text('Kode OTP telah dikirim ulang.'),
-      ), // Pesan snackbar
-    );
-  }
-
-  void _verifyOtp() async {
-    // Verifikasi OTP
-    if (_otpController.text.isEmpty) {
-      // Jika input OTP kosong
-      ScaffoldMessenger.of(context).showSnackBar(
-        // Tampilkan snackbar
-        const SnackBar(
-          content: Text('Masukkan kode OTP terlebih dahulu'),
-        ), // Pesan snackbar
-      );
-      return; // Kembali
-    }
-
-    setState(() => _isLoading = true); // Set status loading
-    await Future.delayed(
-      const Duration(seconds: 1),
-    ); // Simulasi delay verifikasi
-    if (!mounted) return; // Cek apakah widget masih terpasang
-
-    if (_otpController.text.trim() == _dummyOtp) {
-      // Jika OTP benar
-      Navigator.pushReplacement(
-        // Navigasi ke layar dashboard Sisda
-        context, // Konteks saat ini
-        MaterialPageRoute(
-          builder: (context) => const SisdaDashboardScreen(),
-        ), // Layar dashboard Sisda
-      );
-    } else {
-      // Jika OTP salah
-      _otpController.clear(); // Bersihkan input OTP
-      showDialog(
-        // Tampilkan dialog kesalahan
-        context: context, // Konteks saat ini
-        builder: // Builder dialog
-            (context) => AlertDialog(
-              // Dialog alert
-              title: const Text("OTP Salah"),
-              content: const Text("Kode OTP yang kamu masukkan tidak valid."),
-              actions: [
-                // Aksi dialog
-                TextButton(
-                  // Tombol coba lagi
-                  onPressed: () => Navigator.pop(context), // Tutup dialog
-                  child: const Text("Coba Lagi"), // Teks tombol
-                ),
-              ],
-            ),
-      );
-    }
-
-    setState(() => _isLoading = false); // Set status loading selesai
-  }
-
-  // UI
+  // === UI CARD LOGIN SAJA ===
   @override
   Widget build(BuildContext context) {
-    // Bangun tampilan
+    final green = const Color(0xFF0C4E1A); // warna hijau khas
+
     return Scaffold(
-      // Tampilan dasar
-      appBar: AppBar(title: const Text("Halaman OTP")), // Bilah aplikasi
+      backgroundColor: Colors.white, // warna latar
+      appBar: AppBar(
+        backgroundColor: green,
+        title: const Text('SISDA'),
+        centerTitle: false,
+        foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Center(
-        // Isi halaman di tengah
-        child: Column(
-          // Kolom
-          mainAxisAlignment: MainAxisAlignment.center, // Rata tengah
-          children: [
-            TextField(
-              // Input OTP
-              controller: _otpController, // Kontroler input OTP
-              decoration: const InputDecoration(hintText: "Masukkan kode OTP"),
-            ),
-            const SizedBox(height: 16), // Jarak vertikal
-            ElevatedButton(
-              // Tombol verifikasi
-              onPressed:
-                  _isLoading
-                      ? null
-                      : _verifyOtp, // Nonaktifkan tombol saat loading
-              child:
-                  _isLoading
-                      ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      ) // Tampilkan indikator loading
-                      : const Text("Verifikasi"), // Teks tombol
-            ),
-            const SizedBox(height: 8), // Jarak vertikal
-            ElevatedButton(
-              // Tombol kirim ulang OTP
-              onPressed: _resendOtp, // Fungsi kirim ulang OTP
-              child: Text(
-                "Kirim Ulang ($_timerCount)",
-              ), // Teks tombol dengan hitung mundur
-            ),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // === Judul Aplikasi ===
+              const Text(
+                'SISDA',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF0C4E1A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Sistem Informasi Santri/Siswa\nYayasan Darut Taqwa',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF0C4E1A),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // === CARD LOGIN ===
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9EED9), // hijau muda
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Masukkan Kode OTP',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Masukkan kode OTP yang telah dikirim ke nomor\n${widget.phoneNumber.replaceRange(2, 10, "********")}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // === INPUT FIELD ===
+                    TextField(
+                      controller: _otpController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(
+                          Icons.person,
+                          color: Color(0xFF0C4E1A),
+                        ),
+                        hintText: "Masukkan kode OTP",
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(40),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
