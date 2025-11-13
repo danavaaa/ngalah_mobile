@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'sisda_dashboard_screen.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _OtpScreenState extends State<OtpScreen> {
   int _timerCount = 60;
   late Timer _timer;
 
-  String? _otpErrorText; // <-- error message state
+  String? _otpErrorText;
 
   @override
   void initState() {
@@ -47,9 +48,17 @@ class _OtpScreenState extends State<OtpScreen> {
   void _resendOtp() {
     setState(() => _timerCount = 60);
     _startTimer();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Kode OTP telah dikirim ulang.')),
-    );
+
+    Flushbar(
+      message: "Kode OTP telah dikirim ulang.",
+      backgroundColor: const Color(0xFF0C4E1A),
+      duration: const Duration(seconds: 2),
+      margin: const EdgeInsets.all(16),
+      borderRadius: BorderRadius.circular(12),
+      flushbarPosition: FlushbarPosition.TOP,
+      icon: const Icon(Icons.check_circle, color: Colors.white),
+      messageColor: Colors.white,
+    ).show(context);
   }
 
   void _verifyOtp() async {
@@ -60,12 +69,11 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
 
-    // HILANGKAN ERROR SAAT USER SUDAH MENGISI OTP
     setState(() {
       _otpErrorText = null;
+      _isLoading = true;
     });
 
-    setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
@@ -96,9 +104,7 @@ class _OtpScreenState extends State<OtpScreen> {
     setState(() => _isLoading = false);
   }
 
-  // ============================
-  //             UI
-  // ============================
+  // UI
   @override
   Widget build(BuildContext context) {
     final green = const Color(0xFF0C4E1A);
@@ -110,7 +116,7 @@ class _OtpScreenState extends State<OtpScreen> {
         title: const Text('SISDA'),
         foregroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -120,6 +126,7 @@ class _OtpScreenState extends State<OtpScreen> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
+              // Title
               const Text(
                 'SISDA',
                 style: TextStyle(
@@ -128,7 +135,6 @@ class _OtpScreenState extends State<OtpScreen> {
                   color: Color(0xFF0C4E1A),
                 ),
               ),
-
               const SizedBox(height: 8),
 
               const Text(
@@ -143,9 +149,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
               const SizedBox(height: 30),
 
-              // ============================
-              //         CARD OTP
-              // ============================
+              // CARD OTP
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -181,9 +185,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
                     const SizedBox(height: 20),
 
-                    // ============================
-                    //        INPUT OTP
-                    // ============================
+                    // Input OTP
                     TextField(
                       controller: _otpController,
                       keyboardType: TextInputType.number,
@@ -208,9 +210,6 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                     ),
 
-                    // ============================
-                    //       ERROR TEXT
-                    // ============================
                     if (_otpErrorText != null) ...[
                       const SizedBox(height: 6),
                       Text(
@@ -224,10 +223,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     ],
 
                     const SizedBox(height: 20),
-
-                    // ============================
-                    //       KIRIM ULANG
-                    // ============================
+                    // Kirim Ulang OTP
                     ElevatedButton(
                       onPressed: _timerCount == 0 ? _resendOtp : null,
                       style: ElevatedButton.styleFrom(
@@ -253,9 +249,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
                     const SizedBox(height: 15),
 
-                    // ============================
-                    //     BUTTONS BAWAH
-                    // ============================
+                    // Button
                     Row(
                       children: [
                         Expanded(
