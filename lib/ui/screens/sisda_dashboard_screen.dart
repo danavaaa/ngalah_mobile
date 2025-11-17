@@ -5,47 +5,71 @@ class SisdaDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dashboard Screen
-    final green = const Color(0xFF0C4E1A); // Define green color
+    final green = const Color(0xFF0C4E1A);
+
+    // Data Dummy profil
+    const String nis = "21010101";
+    const String namaSantri = "Darut Taqwa";
+    const String nomorWa = "085123456789";
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: green, // warna hijau
-        title: const Text(
-          // judul appbar
-          "Dashboard Sisda",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ), // gaya teks
-        ),
-        centerTitle: true, // judul di tengah
-      ),
-      backgroundColor: Colors.white, // warna latar belakang putih
-      body: Padding(
-        padding: const EdgeInsets.all(20.0), // padding di sekitar konten
-        child: Column(
-          // kolom untuk menata widget secara vertikal
-          crossAxisAlignment: CrossAxisAlignment.start, // rata kiri
-          children: [
-            const Text(
-              // teks selamat datang
-              "Selamat Datang di SISDA ",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0C4E1A),
-              ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(backgroundColor: green),
+
+      body: Column(
+        children: [
+          // HEADER PROFIL SISDA
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            color: green,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Foto profil dummy
+                const CircleAvatar(
+                  radius: 40,
+                  child: Icon(Icons.person, size: 50, color: Colors.white),
+                  backgroundColor: Colors.grey,
+                ),
+                const SizedBox(width: 20),
+
+                // Data Santri
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        nis,
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        namaSantri,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        nomorWa,
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Icon Edit
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 30),
+                ),
+              ],
             ),
-            const SizedBox(height: 10), // jarak vertikal
-            const Text(
-              // teks deskripsi
-              "Ini adalah dashboard sederhana.",
-              style: TextStyle(fontSize: 15, color: Colors.black87),
-            ),
-            const SizedBox(height: 30), // jarak vertikal
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
