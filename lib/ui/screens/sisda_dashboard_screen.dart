@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
+const Color kLightTile = Color(0xFFE3F6E7);
 
 class SisdaDashboardScreen extends StatelessWidget {
   const SisdaDashboardScreen({super.key});
@@ -15,7 +16,10 @@ class SisdaDashboardScreen extends StatelessWidget {
         backgroundColor: kGreen,
         elevation: 0,
         foregroundColor: Colors.white,
+        title: const Text('Ngalah Mobile', style: TextStyle(fontSize: 16)),
+        centerTitle: false,
       ),
+
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -30,8 +34,11 @@ class SisdaDashboardScreen extends StatelessWidget {
                   // FOTO PROFIL
                   CircleAvatar(
                     radius: 35,
-                    backgroundColor: Colors.white70,
-                    child: Icon(Icons.person, size: 45, color: kGreen),
+                    backgroundColor: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(35),
+                      child: Icon(Icons.person, size: 45, color: kGreen),
+                    ),
                   ),
                   const SizedBox(width: 15),
 
@@ -42,7 +49,7 @@ class SisdaDashboardScreen extends StatelessWidget {
                       children: const [
                         Text(
                           "21010101",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                         SizedBox(height: 3),
                         Text(
@@ -51,14 +58,14 @@ class SisdaDashboardScreen extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(height: 3),
                         Text(
                           "085123456789",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                          style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
@@ -67,18 +74,24 @@ class SisdaDashboardScreen extends StatelessWidget {
                   const SizedBox(width: 8),
 
                   // ICON EDIT PROFIL
-                  const Icon(Icons.edit, color: Colors.white, size: 30),
+                  const Icon(Icons.edit, color: Colors.white, size: 26),
                 ],
               ),
             ),
+
             // CARD UTAMA
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(15, 15, 15, 10),
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+              margin: const EdgeInsets.fromLTRB(15, 15, 15, 0),
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
               decoration: BoxDecoration(
                 color: kGreen,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
               ),
               child: Column(
                 children: [
@@ -94,13 +107,27 @@ class SisdaDashboardScreen extends StatelessWidget {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text(
-                                "Saldo",
-                                style: TextStyle(color: Colors.white),
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    "Saldo",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 6),
-                              Text(
+                              const SizedBox(height: 6),
+                              const Text(
                                 "Rp. 2.000.000",
                                 style: TextStyle(
                                   color: Colors.white,
@@ -122,13 +149,27 @@ class SisdaDashboardScreen extends StatelessWidget {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text(
-                                "Tagihan",
-                                style: TextStyle(color: Colors.white),
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    "Tagihan",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 6),
-                              Text(
+                              const SizedBox(height: 6),
+                              const Text(
                                 "Rp. 1.200.000",
                                 style: TextStyle(
                                   color: Colors.white,
@@ -143,47 +184,132 @@ class SisdaDashboardScreen extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 18),
 
-                  // 4 FITUR
+                  // MENU 4 FITUR DI DALAM CARD
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: _menuItem(Icons.add_circle_outline, "Isi Saldo"),
+                        child: _topMenuItem(
+                          Icons.add_box_outlined,
+                          "Isi Saldo",
+                        ),
                       ),
-                      Expanded(child: _menuItem(Icons.receipt_long, "Riwayat")),
                       Expanded(
-                        child: _menuItem(Icons.payments_outlined, "Bayar"),
+                        child: _topMenuItem(Icons.receipt_long, "Riwayat"),
                       ),
                       Expanded(
-                        child: _menuItem(Icons.description_outlined, "Pagu"),
+                        child: _topMenuItem(Icons.payments_outlined, "Bayar"),
+                      ),
+                      Expanded(
+                        child: _topMenuItem(Icons.description_outlined, "Pagu"),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // GRID 8 FITUR
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: GridView.count(
+                crossAxisCount: 4,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 15,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 0.8,
+                children: [
+                  _featureItem(Icons.school, "Pendidikan"),
+                  _featureItem(Icons.access_time, "Absensi"),
+                  _featureItem(Icons.article, "Raport"),
+                  _featureItem(Icons.campaign, "Pengumuman"),
+                  _featureItem(Icons.bed, "Perizinan"),
+                  _featureItem(Icons.restaurant_menu, "Kupon Makan"),
+                  _featureItem(Icons.account_balance_wallet, "Tarik Tunai"),
+                  _featureItem(Icons.manage_accounts, "Atur Uang Saku"),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
           ],
         ),
+      ),
+
+      // BOTTOM NAV BAR SEDERHANA
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: kGreen,
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 2, // SISDA sedang aktif
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        selectedLabelStyle: const TextStyle(fontSize: 11),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'BERANDA'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'BACAAN'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'SISDA'),
+          BottomNavigationBarItem(icon: Icon(Icons.group_add), label: 'PPDB'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'SETTING'),
+        ],
+        onTap: (index) {},
       ),
     );
   }
 
-  // WIDGET MENU ITEM
-  Widget _menuItem(IconData icon, String label) {
+  // WIDGET 4 MENU
+  Widget _topMenuItem(IconData icon, String label) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 32, color: Colors.white),
-        const SizedBox(height: 6),
+        Icon(icon, size: 30, color: Colors.white),
+        const SizedBox(height: 4),
         Text(
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
             fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  // WIDGET GRID 8 FITUR
+  static Widget _featureItem(IconData icon, String label) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            color: kLightTile,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 32, color: kGreen),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            color: kGreen,
+            fontWeight: FontWeight.w600,
+            fontSize: 11,
           ),
           textAlign: TextAlign.center,
         ),
