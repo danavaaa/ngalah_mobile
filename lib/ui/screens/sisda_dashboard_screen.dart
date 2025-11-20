@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/sisda_provider.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
@@ -9,17 +12,29 @@ class SisdaDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sisda = context.watch<SisdaProvider>();
+
+    final idYayasan = sisda.currentAccount?['idYayasan'] ?? '21010101';
+    final nomorWA = sisda.currentAccount?['nomorWA'] ?? '085123456789';
+    const nama = 'DARUT TAQWA';
+
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: kGreen,
         elevation: 0,
         foregroundColor: Colors.white,
         title: const Text('Ngalah Mobile', style: TextStyle(fontSize: 16)),
         centerTitle: false,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Profil',
+          ),
+        ],
       ),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -37,7 +52,7 @@ class SisdaDashboardScreen extends StatelessWidget {
                     backgroundColor: Colors.white,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(35),
-                      child: Icon(Icons.person, size: 45, color: kGreen),
+                      child: const Icon(Icons.person, size: 45, color: kGreen),
                     ),
                   ),
                   const SizedBox(width: 15),
@@ -46,14 +61,17 @@ class SisdaDashboardScreen extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          "21010101",
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                          idYayasan,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
-                        SizedBox(height: 3),
-                        Text(
-                          "DARUT TAQWA",
+                        const SizedBox(height: 3),
+                        const Text(
+                          nama,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -62,19 +80,19 @@ class SisdaDashboardScreen extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 3),
+                        const SizedBox(height: 3),
                         Text(
-                          "085123456789",
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                          nomorWA,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
                   ),
 
                   const SizedBox(width: 8),
-
-                  // ICON EDIT PROFIL
-                  const Icon(Icons.edit, color: Colors.white, size: 26),
                 ],
               ),
             ),
@@ -86,12 +104,7 @@ class SisdaDashboardScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
               decoration: BoxDecoration(
                 color: kGreen,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 children: [
@@ -107,10 +120,10 @@ class SisdaDashboardScreen extends StatelessWidget {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                            children: const [
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "Saldo",
                                     style: TextStyle(
@@ -126,8 +139,8 @@ class SisdaDashboardScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              const Text(
+                              SizedBox(height: 6),
+                              Text(
                                 "Rp. 2.000.000",
                                 style: TextStyle(
                                   color: Colors.white,
@@ -149,10 +162,10 @@ class SisdaDashboardScreen extends StatelessWidget {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                            children: const [
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Text(
                                     "Tagihan",
                                     style: TextStyle(
@@ -168,8 +181,8 @@ class SisdaDashboardScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              const Text(
+                              SizedBox(height: 6),
+                              Text(
                                 "Rp. 1.200.000",
                                 style: TextStyle(
                                   color: Colors.white,
@@ -222,7 +235,7 @@ class SisdaDashboardScreen extends StatelessWidget {
                 crossAxisSpacing: 15,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 0.8,
+                childAspectRatio: 0.7,
                 children: [
                   _featureItem(Icons.school, "Pendidikan"),
                   _featureItem(Icons.access_time, "Absensi"),
@@ -239,25 +252,6 @@ class SisdaDashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
           ],
         ),
-      ),
-
-      // BOTTOM NAV BAR SEDERHANA
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: kGreen,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 2, // SISDA sedang aktif
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        selectedLabelStyle: const TextStyle(fontSize: 11),
-        unselectedLabelStyle: const TextStyle(fontSize: 11),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'BERANDA'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'BACAAN'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'SISDA'),
-          BottomNavigationBarItem(icon: Icon(Icons.group_add), label: 'PPDB'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'SETTING'),
-        ],
-        onTap: (index) {},
       ),
     );
   }
@@ -288,8 +282,8 @@ class SisdaDashboardScreen extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 70,
-          height: 70,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             color: kLightTile,
             borderRadius: BorderRadius.circular(16),

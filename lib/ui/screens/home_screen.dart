@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onTapSisda; // callback pindah tab SISDA
+
+  const HomeScreen({super.key, this.onTapSisda});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +11,6 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -58,6 +59,7 @@ class HomeScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 25),
+
               // GRID MENU
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -68,17 +70,52 @@ class HomeScreen extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    _buildMenu('PPDB', 'assets/icons/ppdb.png'),
-                    _buildMenu('SISDA', 'assets/icons/sisda.png'),
-                    _buildMenu('WAWASAN', 'assets/icons/wawasan.png'),
-                    _buildMenu('YASINAN', 'assets/icons/yasinan.png'),
-                    _buildMenu('KARYA NGALAH', 'assets/icons/karya.png'),
-                    _buildMenu('KHUTBAH', 'assets/icons/khutbah.png'),
-                    _buildMenu('JAMALIN', 'assets/icons/jamalin.png'),
-                    _buildMenu('AL QUR\'AN', 'assets/icons/quran.png'),
-                    _buildMenu('WIRID & DO\'A', 'assets/icons/wirid.png'),
-                    _buildMenu('MAULID', 'assets/icons/maulid.png'),
-                    _buildMenu('LAINNYA', 'assets/icons/lainnya.png'),
+                    _buildMenu(
+                      label: 'PPDB',
+                      pngPath: 'assets/icons/ppdb.png',
+                      onTap: () {},
+                    ),
+                    _buildMenu(
+                      label: 'SISDA',
+                      pngPath: 'assets/icons/sisda.png',
+                      onTap: onTapSisda, // pindah tab ke sisda
+                    ),
+                    _buildMenu(
+                      label: 'WAWASAN',
+                      pngPath: 'assets/icons/wawasan.png',
+                    ),
+                    _buildMenu(
+                      label: 'YASINAN',
+                      pngPath: 'assets/icons/yasinan.png',
+                    ),
+                    _buildMenu(
+                      label: 'KARYA NGALAH',
+                      pngPath: 'assets/icons/karya.png',
+                    ),
+                    _buildMenu(
+                      label: 'KHUTBAH',
+                      pngPath: 'assets/icons/khutbah.png',
+                    ),
+                    _buildMenu(
+                      label: 'JAMALIN',
+                      pngPath: 'assets/icons/jamalin.png',
+                    ),
+                    _buildMenu(
+                      label: 'AL QUR\'AN',
+                      pngPath: 'assets/icons/quran.png',
+                    ),
+                    _buildMenu(
+                      label: 'WIRID & DO\'A',
+                      pngPath: 'assets/icons/wirid.png',
+                    ),
+                    _buildMenu(
+                      label: 'MAULID',
+                      pngPath: 'assets/icons/maulid.png',
+                    ),
+                    _buildMenu(
+                      label: 'LAINNYA',
+                      pngPath: 'assets/icons/lainnya.png',
+                    ),
                   ],
                 ),
               ),
@@ -92,11 +129,15 @@ class HomeScreen extends StatelessWidget {
   }
 
   // WIDGET MENU
-  Widget _buildMenu(String label, String pngPath) {
+  Widget _buildMenu({
+    required String label,
+    required String pngPath,
+    VoidCallback? onTap,
+  }) {
     final green = const Color(0xFF0C4E1A);
 
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

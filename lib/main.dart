@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/reading_screen.dart';
 import 'ui/screens/sisda_screen.dart';
 import 'ui/screens/ppdb_screen.dart';
 import 'ui/screens/settings_screen.dart';
-import 'providers/sisda_provider.dart'; // Provider yang baru kamu buat
+import 'providers/sisda_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NgalahApp()); // Menjalankan aplikasi NgalahApp
+  runApp(const NgalahApp());
 }
 
 class NgalahApp extends StatelessWidget {
@@ -18,29 +19,23 @@ class NgalahApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Bungkus MaterialApp dengan MultiProvider
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => SisdaProvider(),
-        ), // daftar provider
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => SisdaProvider())],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Ngalah Mobile', // Judul aplikasi
+        title: 'Ngalah Mobile',
         theme: ThemeData(
-          // Tema aplikasi
-          primaryColor: const Color(0xFF0C4E1A), // warna hijau khas
+          primaryColor: const Color(0xFF0C4E1A),
           fontFamily: 'Poppins',
         ),
-        home: const SplashScreen(), // Halaman awal aplikasi
+        home: const SplashScreen(),
       ),
     );
   }
 }
 
+/// Navigasi utama dengan bottom navigation
 class MainNavigation extends StatefulWidget {
-  // navigasi utama
   const MainNavigation({super.key});
 
   @override
@@ -48,44 +43,38 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0; // indeks layar saat ini
-
-  final List<Widget> _screens = [
-    // daftar layar
-    HomeScreen(),
-    ReadingScreen(),
-    SisdaScreen(),
-    PpdbScreen(),
-    SettingsScreen(),
-  ];
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    //  tampilan
-    final green = const Color(0xFF0C4E1A); // warna hijau khas
+    final green = const Color(0xFF0C4E1A);
+
+    // daftar layar, HomeScreen diberi callback untuk pindah ke tab SISDA
+    final List<Widget> screens = [
+      HomeScreen(
+        onTapSisda: () {
+          setState(() => _currentIndex = 2); // index 2 = SisdaScreen
+        },
+      ),
+      const ReadingScreen(),
+      const SisdaScreen(),
+      const PpdbScreen(),
+      const SettingsScreen(),
+    ];
 
     return Scaffold(
-      // tampilan dasar
-      body: _screens[_currentIndex], // tampilkan layar sesuai indeks saat ini
+      body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        // bilah navigasi bawah
-        currentIndex: _currentIndex, // indeks saat ini
-        selectedItemColor: Colors.white, // warna item terpilih putih
-        unselectedItemColor:
-            Colors.white70, // warna item tidak terpilih putih transparan
-        backgroundColor: green, // warna latar belakang hijau
-        type: BottomNavigationBarType.fixed, // tipe bilah navigasi tetap
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        backgroundColor: green,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          setState(
-            () => _currentIndex = index,
-          ); // perbarui indeks saat item ditekan
+          setState(() => _currentIndex = index);
         },
         items: const [
-          // item bilah navigasi
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'BERANDA',
-          ), // ikon dan label Beranda
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'BERANDA'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'BACAAN'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'SISDA'),
           BottomNavigationBarItem(icon: Icon(Icons.group_add), label: 'PPDB'),

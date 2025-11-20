@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:another_flushbar/flushbar.dart';
-import 'sisda_dashboard_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/sisda_provider.dart';
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
@@ -61,7 +63,7 @@ class _OtpScreenState extends State<OtpScreen> {
     ).show(context);
   }
 
-  void _verifyOtp() async {
+  Future<void> _verifyOtp() async {
     if (_otpController.text.isEmpty) {
       setState(() {
         _otpErrorText = "Isikan kode OTP terlebih dahulu";
@@ -79,10 +81,15 @@ class _OtpScreenState extends State<OtpScreen> {
     if (!mounted) return;
 
     if (_otpController.text.trim() == _dummyOtp) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SisdaDashboardScreen()),
-      );
+      // OTP BENAR
+      // 1. Tandai user sudah login SISDA
+      final sisda = context.read<SisdaProvider>();
+      sisda.markOtpSuccess();
+
+      // 2. Kembali ke SisdaScreen (tab SISDA)
+      Navigator.pop(context);
+      // SisdaScreen akan rebuild dan karena isLoggedIn == true,
+      // yang tampil adalah dashboard SISDA.
     } else {
       _otpController.clear();
       showDialog(
@@ -101,10 +108,10 @@ class _OtpScreenState extends State<OtpScreen> {
       );
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
-  // UI
   @override
   Widget build(BuildContext context) {
     final green = const Color(0xFF0C4E1A);
@@ -120,13 +127,11 @@ class _OtpScreenState extends State<OtpScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Title
               const Text(
                 'SISDA',
                 style: TextStyle(
@@ -136,7 +141,6 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-
               const Text(
                 'Sistem Informasi Santri/Siswa\nYayasan Darut Taqwa',
                 textAlign: TextAlign.center,
@@ -146,7 +150,6 @@ class _OtpScreenState extends State<OtpScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
               const SizedBox(height: 30),
 
               // CARD OTP
@@ -164,7 +167,6 @@ class _OtpScreenState extends State<OtpScreen> {
                     ),
                   ],
                 ),
-
                 child: Column(
                   children: [
                     const Text(
@@ -174,15 +176,12 @@ class _OtpScreenState extends State<OtpScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     Text(
                       'Masukkan kode OTP yang telah dikirim ke nomor\n${widget.phoneNumber.replaceRange(2, 10, "********")}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 14),
                     ),
-
                     const SizedBox(height: 20),
 
                     // Input OTP
@@ -223,6 +222,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     ],
 
                     const SizedBox(height: 20),
+
                     // Kirim Ulang OTP
                     ElevatedButton(
                       onPressed: _timerCount == 0 ? _resendOtp : null,
@@ -249,7 +249,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
                     const SizedBox(height: 15),
 
-                    // Button
+                    // Tombol Ganti Nomor & Verifikasi
                     Row(
                       children: [
                         Expanded(
@@ -271,9 +271,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(width: 12),
-
                         Expanded(
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _verifyOtp,
