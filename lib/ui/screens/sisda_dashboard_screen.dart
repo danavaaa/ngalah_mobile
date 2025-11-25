@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/sisda_provider.dart';
+import 'isi_saldo_screen.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
@@ -50,10 +51,7 @@ class SisdaDashboardScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 35,
                     backgroundColor: Colors.white,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(35),
-                      child: const Icon(Icons.person, size: 45, color: kGreen),
-                    ),
+                    child: const Icon(Icons.person, size: 45, color: kGreen),
                   ),
                   const SizedBox(width: 15),
 
@@ -91,8 +89,6 @@ class SisdaDashboardScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  const SizedBox(width: 8),
                 ],
               ),
             ),
@@ -203,18 +199,38 @@ class SisdaDashboardScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // ISI SALDO
                       Expanded(
-                        child: _topMenuItem(
-                          Icons.add_box_outlined,
-                          "Isi Saldo",
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const IsiSaldoScreen(),
+                              ),
+                            );
+                          },
+                          child: _topMenuItem(
+                            Icons.add_box_outlined,
+                            "Isi Saldo",
+                          ),
                         ),
                       ),
+
+                      // RIWAYAT
                       Expanded(
                         child: _topMenuItem(Icons.receipt_long, "Riwayat"),
                       ),
-                      Expanded(
-                        child: _topMenuItem(Icons.payments_outlined, "Bayar"),
+
+                      // BAYAR
+                      const Expanded(
+                        child: _TopMenuItemStatic(
+                          icon: Icons.payments_outlined,
+                          label: "Bayar",
+                        ),
                       ),
+
+                      // PAGU
                       Expanded(
                         child: _topMenuItem(Icons.description_outlined, "Pagu"),
                       ),
@@ -236,15 +252,24 @@ class SisdaDashboardScreen extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 0.7,
-                children: [
-                  _featureItem(Icons.school, "Pendidikan"),
-                  _featureItem(Icons.access_time, "Absensi"),
-                  _featureItem(Icons.article, "Raport"),
-                  _featureItem(Icons.campaign, "Pengumuman"),
-                  _featureItem(Icons.bed, "Perizinan"),
-                  _featureItem(Icons.restaurant_menu, "Kupon Makan"),
-                  _featureItem(Icons.account_balance_wallet, "Tarik Tunai"),
-                  _featureItem(Icons.manage_accounts, "Atur Uang Saku"),
+                children: const [
+                  _FeatureItem(icon: Icons.school, label: "Pendidikan"),
+                  _FeatureItem(icon: Icons.access_time, label: "Absensi"),
+                  _FeatureItem(icon: Icons.article, label: "Raport"),
+                  _FeatureItem(icon: Icons.campaign, label: "Pengumuman"),
+                  _FeatureItem(icon: Icons.bed, label: "Perizinan"),
+                  _FeatureItem(
+                    icon: Icons.restaurant_menu,
+                    label: "Kupon Makan",
+                  ),
+                  _FeatureItem(
+                    icon: Icons.account_balance_wallet,
+                    label: "Tarik Tunai",
+                  ),
+                  _FeatureItem(
+                    icon: Icons.manage_accounts,
+                    label: "Atur Uang Saku",
+                  ),
                 ],
               ),
             ),
@@ -275,9 +300,43 @@ class SisdaDashboardScreen extends StatelessWidget {
       ],
     );
   }
+}
 
-  // WIDGET GRID 8 FITUR
-  static Widget _featureItem(IconData icon, String label) {
+class _TopMenuItemStatic extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _TopMenuItemStatic({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 30, color: Colors.white),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _FeatureItem({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
