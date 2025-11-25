@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../data/models/topup_va.dart';
+import '../../data/services/isi_saldo_service.dart';
+import 'isi_saldo_konfirm.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kLightTile = Color(0xFFE3F6E7);
@@ -64,7 +67,7 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
     });
   }
 
-  void _onConfirm() {
+  Future<void> _onConfirm() async {
     final nominal =
         int.tryParse(_nominalController.text.replaceAll('.', '')) ?? 0;
 
@@ -77,30 +80,39 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
       return;
     }
 
+    final selectedBank = _banks[_selectedBankIndex!];
+
+    // dialog loading
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Konfirmasi Isi Saldo'),
-            content: Text(
-              'Nominal: Rp ${_formatRupiah(nominal)}\n'
-              'Bank: ${_banks[_selectedBankIndex!].name}',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // TODO: lanjut ke proses pembayaran / API
-                },
-                child: const Text('Lanjut'),
-              ),
-            ],
-          ),
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
+
+    try {
+      final service = IsiSaldoService();
+
+      // PANGGIL SERVICE (nanti tinggal diganti ke API asli)
+      final TopupVa data = await service.createTopup(
+        nominal: nominal,
+        bankCode: selectedBank.code,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // tutup dialog loading
+
+      // PINDAH KE HALAMAN KONFIRMASI + KIRIM DATA
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: data)),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // tutup dialog kalau error
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal membuat topup: $e')));
+    }
   }
 
   @override
@@ -351,7 +363,7 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
                 ),
               ),
               child: const Text(
-                'Konfirmasi   ➜',
+                'Konfirmasi',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
