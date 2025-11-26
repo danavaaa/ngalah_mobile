@@ -4,14 +4,13 @@ import 'package:provider/provider.dart';
 import '../../providers/sisda_provider.dart';
 import 'isi_saldo_screen.dart';
 import 'riwayat_transaksi_screen.dart';
+import 'bayar_tagihan_screen.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
 const Color kLightTile = Color(0xFFE3F6E7);
 
 class SisdaDashboardScreen extends StatelessWidget {
-  static const routeName = '/sisda-dashboard';
-
   const SisdaDashboardScreen({super.key});
 
   @override
@@ -236,10 +235,17 @@ class SisdaDashboardScreen extends StatelessWidget {
                       ),
 
                       // BAYAR
-                      const Expanded(
-                        child: _TopMenuItemStatic(
-                          icon: Icons.payments_outlined,
-                          label: "Bayar",
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const BayarTagihanScreen(),
+                              ),
+                            );
+                          },
+                          child: _topMenuItem(Icons.payments_outlined, "Bayar"),
                         ),
                       ),
 
@@ -296,33 +302,6 @@ class SisdaDashboardScreen extends StatelessWidget {
 
   // WIDGET 4 MENU
   Widget _topMenuItem(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 30, color: Colors.white),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}
-
-class _TopMenuItemStatic extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _TopMenuItemStatic({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
