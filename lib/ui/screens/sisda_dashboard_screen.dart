@@ -9,6 +9,8 @@ const Color kCardGreen = Color(0xFF2E6C3E);
 const Color kLightTile = Color(0xFFE3F6E7);
 
 class SisdaDashboardScreen extends StatelessWidget {
+  static const routeName = '/sisda-dashboard';
+
   const SisdaDashboardScreen({super.key});
 
   @override

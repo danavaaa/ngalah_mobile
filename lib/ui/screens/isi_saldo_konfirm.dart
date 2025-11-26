@@ -49,11 +49,10 @@ class IsiSaldoKonfirmScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: Row(
             children: [
+              // HAPUS
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: panggil API batal / hapus topup
-                  },
+                  onPressed: () => _confirmDelete(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -65,9 +64,16 @@ class IsiSaldoKonfirmScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
+
+              // TUTUP (KEMBALI KE DASHBOARD SISDA)
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    // tutup IsiSaldoKonfirm
+                    Navigator.of(context).pop();
+                    // tutup IsiSaldoScreen kembali ke SisdaDashboard
+                    Navigator.of(context).pop();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kGreen,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -84,6 +90,51 @@ class IsiSaldoKonfirmScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// DIALOG KONFIRMASI HAPUS
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: const Text('Hapus transaksi Isi Saldo?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // 1. Tutup dialog
+                Navigator.of(dialogContext).pop();
+                // 2. Tutup IsiSaldoKonfirmScreen
+                Navigator.of(context).pop();
+                // 3. Tutup IsiSaldoScreen -> kembali ke SisdaDashboard
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('Hapus'),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () {
+                // Hanya tutup dialog, tetap di halaman ini
+                Navigator.of(dialogContext).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Tidak'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // WIDGET BANTUAN
 
   Widget _infoTile(String title, String value) {
     return Container(

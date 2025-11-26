@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/models/topup_va.dart';
 import '../../data/services/isi_saldo_service.dart';
+import '../../data/models/topup_va.dart';
 import 'isi_saldo_konfirm.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
@@ -61,16 +61,22 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
 
   void _setPresetAmount(int index) {
     setState(() {
-      _selectedAmountIndex = index;
-      final value = _presetAmounts[index];
-      _nominalController.text = value.toString();
+      if (_selectedAmountIndex == index) {
+        // batal pilih
+        _selectedAmountIndex = null;
+        _nominalController.clear();
+      } else {
+        // pilih nominal baru
+        _selectedAmountIndex = index;
+        final value = _presetAmounts[index];
+        _nominalController.text = value.toString();
+      }
     });
   }
 
   Future<void> _onConfirm() async {
     final nominal =
         int.tryParse(_nominalController.text.replaceAll('.', '')) ?? 0;
-
     if (nominal <= 0 || _selectedBankIndex == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -91,8 +97,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
 
     try {
       final service = IsiSaldoService();
-
-      // PANGGIL SERVICE (nanti tinggal diganti ke API asli)
       final TopupVa data = await service.createTopup(
         nominal: nominal,
         bankCode: selectedBank.code,
