@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/upt_tagihan.dart';
 import '../../data/services/upt_tagihan_service.dart';
+import 'metode_pembayaran_screen.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 
@@ -301,11 +302,38 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
                   ),
                 ),
                 Container(width: 1, color: Colors.white),
+
                 // tombol Bayar
                 Expanded(
                   flex: 2,
                   child: InkWell(
-                    onTap: canPay ? () {} : null,
+                    onTap:
+                        canPay
+                            ? () {
+                              // ambil tagihan yang dicentang
+                              final selectedBills =
+                                  _uptTagihan
+                                      .where((t) => _selectedIds.contains(t.id))
+                                      .toList();
+
+                              final totalTagihan = _totalSelected;
+
+                              // sementara: contoh saldo 2.000.000
+                              const int saldoNgalahContoh = 2000000;
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => MetodePembayaranScreen(
+                                        tagihanDipilih: selectedBills,
+                                        totalTagihan: totalTagihan,
+                                        saldoNgalah: saldoNgalahContoh,
+                                      ),
+                                ),
+                              );
+                            }
+                            : null,
                     child: Container(
                       decoration: BoxDecoration(
                         color: canPay ? kGreen : Colors.grey,
