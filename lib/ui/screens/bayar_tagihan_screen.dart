@@ -442,44 +442,7 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
                 Expanded(
                   flex: 2,
                   child: InkWell(
-                    onTap:
-                        canPay
-                            ? () {
-                              if (_selectedTabIndex == 0) {
-                                // UPT → kirim ke MetodePembayaranScreen
-                                final selectedBills =
-                                    _uptTagihan
-                                        .where(
-                                          (t) => _selectedUptIds.contains(t.id),
-                                        )
-                                        .toList();
-
-                                // sementara: contoh saldo 2.000.000
-                                const int saldoNgalahContoh = 2000000;
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) => MetodePembayaranScreen(
-                                          tagihanDipilih: selectedBills,
-                                          totalTagihan: total,
-                                          saldoNgalah: saldoNgalahContoh,
-                                        ),
-                                  ),
-                                );
-                              } else {
-                                // NON-UPT
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Pembayaran NON-UPT belum diimplementasikan',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                            : null,
+                    onTap: !canPay ? null : () => _onBayarPressed(total),
                     child: Container(
                       decoration: BoxDecoration(
                         color: canPay ? kGreen : Colors.grey,
@@ -504,6 +467,53 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _onBayarPressed(int total) {
+    // 1. Kumpulkan item terpilih dari tab aktif
+    final List<MetodePembayaranItem> items = [];
+
+    if (_selectedTabIndex == 0) {
+      // UPT
+      for (final t in _uptTagihan) {
+        if (_selectedUptIds.contains(t.id)) {
+          items.add(
+            MetodePembayaranItem(
+              title: t.bulanLabel, // contoh: "Juli 2025"
+              nominal: t.nominal,
+            ),
+          );
+        }
+      }
+    } else {
+      // NON-UPT
+      for (final t in _nonUptTagihan) {
+        if (_selectedNonUptIds.contains(t.id)) {
+          items.add(
+            MetodePembayaranItem(
+              title: t.title, // contoh: "UTS 1"
+              nominal: t.nominal,
+            ),
+          );
+        }
+      }
+    }
+
+    // 2. Contoh saldo sementara (nanti diganti dari API / provider)
+    const int saldoNgalahContoh = 2000000;
+
+    // 3. Pindah ke layar Metode Pembayaran
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => MetodePembayaranScreen(
+              items: items,
+              totalTagihan: total,
+              saldoNgalah: saldoNgalahContoh,
+            ),
       ),
     );
   }

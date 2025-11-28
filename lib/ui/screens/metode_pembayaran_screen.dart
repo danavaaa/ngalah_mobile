@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
-import '../../data/models/upt_tagihan.dart';
+
 import 'isi_saldo_screen.dart';
-import 'sisda_dashboard_screen.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 
+class MetodePembayaranItem {
+  final String title; // contoh: "Juli 2025" atau "UTS 1"
+  final int nominal; // dalam rupiah
+
+  MetodePembayaranItem({required this.title, required this.nominal});
+}
+
 class MetodePembayaranScreen extends StatelessWidget {
-  final List<UptTagihan> tagihanDipilih;
+  final List<MetodePembayaranItem> items;
   final int totalTagihan;
   final int saldoNgalah;
 
   const MetodePembayaranScreen({
     super.key,
-    required this.tagihanDipilih,
+    required this.items,
     required this.totalTagihan,
     required this.saldoNgalah,
   });
@@ -28,62 +34,73 @@ class MetodePembayaranScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         title: const Text('Metode Pembayaran'),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 12),
-          _buildTotalTagihanCard(),
-          const SizedBox(height: 16),
-          _buildSaldoCardSection(context, saldoCukup),
-          const Spacer(),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildTotalCard(),
+                    const SizedBox(height: 16),
+                    _buildTableTagihan(),
+                    const SizedBox(height: 24),
+                    const Center(
+                      child: Text(
+                        'Pilih Metode Pembayaran',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSaldoCard(context, saldoCukup),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: _buildBottomButton(context, saldoCukup),
     );
   }
 
-  Future<void> _onConfirmPressed(BuildContext context, bool saldoCukup) async {
-    if (!saldoCukup) return;
-
-    // 1. Tampilkan dialog sukses
-    final bool? ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  // WIDGET TOTAL TAGIHAN
+  Widget _buildTotalCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
-          title: const Text('Pembayaran Berhasil'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(true);
-              },
-              child: const Text(
-                'Kembali ke Dashboard',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Column(
+        children: [
+          const Text('Total Tagihan', style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(
+            _formatRupiah(totalTagihan, prefix: 'IDR '),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
-
-    // 2. Kalau user menekan "Kembali ke Dashboard"
-    if (ok == true) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const SisdaDashboardScreen()),
-        (route) => false,
-      );
-    }
   }
 
   // TOTAL TAGIHAN
 
-  Widget _buildTotalTagihanCard() {
+  Widget _buildTableTagihan() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -97,58 +114,60 @@ class MetodePembayaranScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Header
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
             ),
-            child: Column(
-              children: [
-                const Text('Total Tagihan', style: TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: const [
                 Text(
-                  _formatRupiah(totalTagihan),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Pagu',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                Text(
+                  'Nominal',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ],
             ),
           ),
-
           const Divider(height: 1),
 
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: tagihanDipilih.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final item = tagihanDipilih[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+          // List baris
+          ...items.map(
+            (item) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatRupiah(item.nominal, prefix: 'Rp. '),
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item.bulanLabel.toUpperCase(),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      _formatRupiah(item.nominal),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              );
-            },
+                const Divider(height: 1),
+              ],
+            ),
           ),
         ],
       ),
@@ -157,37 +176,70 @@ class MetodePembayaranScreen extends StatelessWidget {
 
   // SALDO NGALAH MOBILE
 
-  Widget _buildSaldoCardSection(BuildContext context, bool saldoCukup) {
-    if (!saldoCukup) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Saldo Ngalah Mobile',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
+  Widget _buildSaldoCard(BuildContext context, bool saldoCukup) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Kiri
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Saldo Ngalah Mobile',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Saldo tidak mencukupi',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
-                ),
-              ],
-            ),
-            TextButton.icon(
+                  const SizedBox(height: 4),
+                  Text(
+                    'Saldo ${_formatRupiah(saldoNgalah)}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+
+              // Kanan
+              saldoCukup
+                  ? const Icon(Icons.check_circle, color: kGreen, size: 26)
+                  : Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade500,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Saldo tidak cukup',
+                      style: TextStyle(color: Colors.white, fontSize: 11),
+                    ),
+                  ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Tombol isi saldo jika saldo tidak cukup
+        if (!saldoCukup)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -197,54 +249,17 @@ class MetodePembayaranScreen extends StatelessWidget {
               icon: const Icon(Icons.add_circle_outline, color: kGreen),
               label: const Text('Isi saldo', style: TextStyle(color: kGreen)),
             ),
-          ],
-        ),
-      );
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kGreen, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Saldo Ngalah Mobile',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Saldo ${_formatRupiah(saldoNgalah)}',
-                style: const TextStyle(fontSize: 13, color: Colors.black87),
-              ),
-            ],
-          ),
-          const Icon(Icons.check_circle, color: kGreen, size: 28),
-        ],
-      ),
+      ],
     );
   }
 
   // BUTTON KONFIRMASI
-
   Widget _buildBottomButton(BuildContext context, bool saldoCukup) {
+    final bool canConfirm = saldoCukup; // tombol aktif kalau saldo cukup
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -260,9 +275,38 @@ class MetodePembayaranScreen extends StatelessWidget {
         width: double.infinity,
         child: ElevatedButton(
           onPressed:
-              saldoCukup ? () => _onConfirmPressed(context, saldoCukup) : null,
+              !canConfirm
+                  ? null
+                  : () async {
+                    // Tampilkan dialog sukses
+                    await showDialog<void>(
+                      context: context,
+                      builder: (ctx) {
+                        return AlertDialog(
+                          title: const Text('Pembayaran Berhasil'),
+                          content: const Text(
+                            'Terima kasih, pembayaran anda sedang diproses.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.of(ctx).pop(), // tutup dialog
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    // Setelah dialog tertutup, pop 2x:
+                    Navigator.of(context).pop(); // tutup MetodePembayaranScreen
+                    Navigator.of(
+                      context,
+                    ).pop(); // tutup BayarTagihanScreen -> kembali ke SisdaDashboard
+                  },
+
           style: ElevatedButton.styleFrom(
-            backgroundColor: saldoCukup ? kGreen : Colors.grey,
+            backgroundColor: canConfirm ? kGreen : Colors.grey,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(26),
             ),
@@ -276,9 +320,11 @@ class MetodePembayaranScreen extends StatelessWidget {
     );
   }
 
-  // UTIL
+  // FORMAT RUPIAH
 
-  String _formatRupiah(int nominal) {
+  String _formatRupiah(int nominal, {String prefix = 'Rp. '}) {
+    if (nominal <= 0) return '${prefix}0';
+
     final text = nominal.toString();
     String result = '';
     int count = 0;
@@ -286,13 +332,12 @@ class MetodePembayaranScreen extends StatelessWidget {
     for (int i = text.length - 1; i >= 0; i--) {
       result = text[i] + result;
       count++;
-
       if (count == 3 && i != 0) {
         result = '.$result';
         count = 0;
       }
     }
 
-    return 'Rp. $result';
+    return '$prefix$result';
   }
 }
