@@ -5,6 +5,7 @@ import '../../providers/sisda_provider.dart';
 import 'isi_saldo_screen.dart';
 import 'riwayat_transaksi_screen.dart';
 import 'bayar_tagihan_screen.dart';
+import 'pagu_screen.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
@@ -251,7 +252,20 @@ class SisdaDashboardScreen extends StatelessWidget {
 
                       // PAGU
                       Expanded(
-                        child: _topMenuItem(Icons.description_outlined, "Pagu"),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PaguScreen(),
+                              ),
+                            );
+                          },
+                          child: _topMenuItem(
+                            Icons.description_outlined,
+                            "Pagu",
+                          ),
+                        ),
                       ),
                     ],
                   ),
