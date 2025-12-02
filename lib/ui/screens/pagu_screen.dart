@@ -18,6 +18,7 @@ class _PaguScreenState extends State<PaguScreen> {
   bool _isLoading = true;
   String? _error;
   List<PaguItem> _items = [];
+  String? _expandedId;
 
   @override
   void initState() {
@@ -94,65 +95,188 @@ class _PaguScreenState extends State<PaguScreen> {
       itemCount: _items.length,
       itemBuilder: (context, index) {
         final item = _items[index];
+        final isExpanded = _expandedId == item.id;
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: _buildPaguCard(item),
+          child: _buildPaguCard(item, isExpanded),
         );
       },
     );
   }
 
-  Widget _buildPaguCard(PaguItem item) {
+  Widget _buildPaguCard(PaguItem item, bool isExpanded) {
     final bool lunas = item.sudahLunas;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: lunas ? kGreen : Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // kiri: bulan + jatuh tempo
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.bulanLabel,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: lunas ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.jatuhTempoLabel,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: lunas ? Colors.white70 : Colors.black54,
-                ),
-              ),
-            ],
-          ),
-          // kanan: nominal
-          Text(
-            _formatRupiah(item.nominal),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: lunas ? Colors.white : Colors.black87,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (_expandedId == item.id) {
+            _expandedId = null;
+          } else {
+            _expandedId = item.id;
+          }
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // HEADER
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: lunas ? kGreen : Colors.grey.shade400,
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(12),
+                  bottom: isExpanded ? Radius.zero : const Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // kiri: bulan + jatuh tempo
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.bulanLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: lunas ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.jatuhTempoLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: lunas ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // kanan: nominal
+                  Text(
+                    _formatRupiah(item.nominal),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: lunas ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // DETAIL
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 200),
+              crossFadeState:
+                  isExpanded
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+              firstChild: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(12),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // baris judul
+                    Row(
+                      children: const [
+                        Expanded(
+                          child: Text(
+                            'Pagu',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Tagihan',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Terbayar',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // baris nilai
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.bulanLabel,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _formatRupiah(item.nominal),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _formatRupiah(item.sudahLunas ? item.nominal : 0),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              secondChild: const SizedBox.shrink(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -171,20 +295,34 @@ class _PaguScreenState extends State<PaguScreen> {
           ),
         ],
       ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: kGreen,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _rekapItem('Total Biaya', _formatRupiah(_totalBiaya)),
-            _rekapItem('Terbayar', _formatRupiah(_totalTerbayar)),
-            _rekapItem('Sisa', _formatRupiah(_totalSisa)),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Rekapitulasi Biaya Periode Ini',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: kGreen,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _rekapItem('Total Biaya', _formatRupiah(_totalBiaya)),
+                _rekapItem('Terbayar', _formatRupiah(_totalTerbayar)),
+                _rekapItem('Sisa', _formatRupiah(_totalSisa)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
