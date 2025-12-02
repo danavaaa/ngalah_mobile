@@ -49,6 +49,8 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
 
     try {
       final data = await _uptService.fetchUptTagihan();
+      // urutkan by jatuh tempo (paling awal di atas)
+      data.sort((a, b) => a.jatuhTempo.compareTo(b.jatuhTempo));
       setState(() {
         _uptTagihan = data;
         _isLoadingUpt = false;
@@ -86,17 +88,13 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
     if (_selectedTabIndex == 0) {
       int sum = 0;
       for (final t in _uptTagihan) {
-        if (_selectedUptIds.contains(t.id)) {
-          sum += t.nominal;
-        }
+        if (_selectedUptIds.contains(t.id)) sum += t.nominal;
       }
       return sum;
     } else {
       int sum = 0;
       for (final t in _nonUptTagihan) {
-        if (_selectedNonUptIds.contains(t.id)) {
-          sum += t.nominal;
-        }
+        if (_selectedNonUptIds.contains(t.id)) sum += t.nominal;
       }
       return sum;
     }
@@ -212,29 +210,45 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
       itemBuilder: (context, index) {
         final item = _uptTagihan[index];
         final selected = _selectedUptIds.contains(item.id);
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Checkbox(
-                value: selected,
-                onChanged: (v) {
-                  setState(() {
-                    if (v == true) {
-                      _selectedUptIds.add(item.id);
-                    } else {
-                      _selectedUptIds.remove(item.id);
-                    }
-                  });
-                },
-              ),
-              Expanded(child: _buildUptCard(item)),
-            ],
+          child: GestureDetector(
+            onTap: () => _handleUptTap(index),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: selected,
+                  onChanged: (_) => _handleUptTap(index),
+                ),
+                Expanded(child: _buildUptCard(item)),
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  /// Klik UPT:
+  /// - belum dipilih -> pilih dari index 0 sampai index ini
+  /// - sudah dipilih -> lepaskan dari index ini sampai akhir
+  void _handleUptTap(int index) {
+    setState(() {
+      final item = _uptTagihan[index];
+      final isSelected = _selectedUptIds.contains(item.id);
+
+      if (!isSelected) {
+        for (int i = 0; i <= index; i++) {
+          _selectedUptIds.add(_uptTagihan[i].id);
+        }
+      } else {
+        for (int i = index; i < _uptTagihan.length; i++) {
+          _selectedUptIds.remove(_uptTagihan[i].id);
+        }
+      }
+    });
   }
 
   Widget _buildUptCard(UptTagihan item) {
@@ -321,25 +335,30 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            value: selected,
-            onChanged: (v) {
-              setState(() {
-                if (v == true) {
-                  _selectedNonUptIds.add(item.id);
-                } else {
-                  _selectedNonUptIds.remove(item.id);
-                }
-              });
-            },
-          ),
-          Expanded(child: _buildNonUptCard(item)),
-        ],
+      child: GestureDetector(
+        onTap: () => _handleNonUptTap(item.id),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox(
+              value: selected,
+              onChanged: (_) => _handleNonUptTap(item.id),
+            ),
+            Expanded(child: _buildNonUptCard(item)),
+          ],
+        ),
       ),
     );
+  }
+
+  void _handleNonUptTap(String id) {
+    setState(() {
+      if (_selectedNonUptIds.contains(id)) {
+        _selectedNonUptIds.remove(id);
+      } else {
+        _selectedNonUptIds.add(id);
+      }
+    });
   }
 
   Widget _buildNonUptCard(NonUptTagihan item) {
@@ -357,23 +376,33 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // kiri: judul + subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(item.subtitleLabel, style: const TextStyle(fontSize: 13)),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  item.subtitleLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           // kanan: nominal
           Text(
             _formatRupiah(item.nominal),
@@ -437,7 +466,6 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
                   ),
                 ),
                 Container(width: 1, color: Colors.white),
-
                 // tombol Bayar
                 Expanded(
                   flex: 2,
@@ -480,10 +508,7 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
       for (final t in _uptTagihan) {
         if (_selectedUptIds.contains(t.id)) {
           items.add(
-            MetodePembayaranItem(
-              title: t.bulanLabel, // contoh: "Juli 2025"
-              nominal: t.nominal,
-            ),
+            MetodePembayaranItem(title: t.bulanLabel, nominal: t.nominal),
           );
         }
       }
@@ -491,19 +516,12 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
       // NON-UPT
       for (final t in _nonUptTagihan) {
         if (_selectedNonUptIds.contains(t.id)) {
-          items.add(
-            MetodePembayaranItem(
-              title: t.title, // contoh: "UTS 1"
-              nominal: t.nominal,
-            ),
-          );
+          items.add(MetodePembayaranItem(title: t.title, nominal: t.nominal));
         }
       }
     }
-
     // 2. Contoh saldo sementara (nanti diganti dari API / provider)
     const int saldoNgalahContoh = 2000000;
-
     // 3. Pindah ke layar Metode Pembayaran
     Navigator.push(
       context,
