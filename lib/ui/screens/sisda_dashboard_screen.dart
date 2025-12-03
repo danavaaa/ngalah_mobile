@@ -37,13 +37,9 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
     });
   }
 
-  Future<void> _openActiveTopup(BuildContext context, TopupVa topup) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: topup)),
-    );
-    // setelah balik dari halaman topup, refresh lagi (bisa jadi dihapus/expired)
-    _refreshActiveTopup();
+  bool _isActiveTopupValid(TopupVa? t) {
+    if (t == null) return false;
+    return t.expiredAt.isAfter(DateTime.now());
   }
 
   String _formatRupiah(int nominal) {
@@ -67,6 +63,46 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
     final hours = diff.inHours;
     final minutes = diff.inMinutes.remainder(60);
     return '${hours}j ${minutes}m';
+  }
+
+  Future<void> _openActiveTopup(BuildContext context, TopupVa topup) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: topup)),
+    );
+    // setelah balik dari halaman topup, refresh lagi (bisa jadi dihapus/expired)
+    _refreshActiveTopup();
+  }
+
+  Future<void> _handleIsiSaldoTap(BuildContext context) async {
+    final active = await TopupCacheService().getActiveTopup();
+
+    // kalau expired -> bersihkan cache
+    if (active != null && active.expiredAt.isBefore(DateTime.now())) {
+      await TopupCacheService().clearActiveTopup();
+      _refreshActiveTopup();
+    }
+
+    // masih ada VA aktif -> tampilkan dialog putih (tidak bisa ditutup kecuali X)
+    if (_isActiveTopupValid(active)) {
+      if (!context.mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false, // hanya bisa ditutup lewat X
+        barrierColor: Colors.black.withOpacity(0.15),
+        builder:
+            (ctx) => VaActiveInfoDialog(onClose: () => Navigator.of(ctx).pop()),
+      );
+      return;
+    }
+
+    // tidak ada VA aktif -> lanjut Isi Saldo
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const IsiSaldoScreen()),
+    );
+    _refreshActiveTopup();
   }
 
   @override
@@ -260,16 +296,7 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                       // ISI SALDO
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const IsiSaldoScreen(),
-                              ),
-                            );
-                            // refresh banner
-                            _refreshActiveTopup();
-                          },
+                          onTap: () => _handleIsiSaldoTap(context),
                           child: _topMenuItem(
                             Icons.add_box_outlined,
                             "Isi Saldo",
@@ -364,7 +391,9 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
               ),
             ),
 
-            // ✅ BANNER TOPUP AKTIF (dipindah ke bawah 8 menu)
+            const SizedBox(height: 18),
+
+            // BANNER TOPUP AKTIF
             FutureBuilder<TopupVa?>(
               future: _activeTopupFuture,
               builder: (context, snap) {
@@ -373,16 +402,10 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                 }
 
                 final topup = snap.data;
-                if (topup == null) return const SizedBox.shrink();
-
-                // safety: kalau expired, clear & jangan tampilkan
-                if (topup.expiredAt.isBefore(DateTime.now())) {
-                  TopupCacheService().clearActiveTopup();
-                  return const SizedBox.shrink();
-                }
+                if (!_isActiveTopupValid(topup)) return const SizedBox.shrink();
 
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(15, 18, 15, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
                     onTap: () => _openActiveTopup(context, topup),
@@ -433,7 +456,7 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${topup.bankCode} • ${_formatRupiah(topup.totalTransfer)} • Exp ${_formatExpiredFromNow(topup.expiredAt)}',
+                                  '${topup!.bankCode} • ${_formatRupiah(topup.totalTransfer)} • Exp ${_formatExpiredFromNow(topup.expiredAt)}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -456,8 +479,6 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                 );
               },
             ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -523,6 +544,58 @@ class _FeatureItem extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+}
+
+/// Dialog putih VA aktif
+class VaActiveInfoDialog extends StatelessWidget {
+  final VoidCallback onClose;
+
+  const VaActiveInfoDialog({super.key, required this.onClose});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                child: Text(
+                  'ada Virtual Account pembayaran Active, silahkan selesaikan pembayaran atau hapus VA aktif',
+                  style: TextStyle(fontSize: 13, height: 1.3),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: onClose,
+                borderRadius: BorderRadius.circular(30),
+                child: const Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(Icons.close, size: 18, color: Colors.black54),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
