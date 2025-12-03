@@ -2,17 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/sisda_provider.dart';
+import '../../data/models/topup_va.dart';
+import '../../data/services/topup_cache_service.dart';
+
 import 'isi_saldo_screen.dart';
 import 'riwayat_transaksi_screen.dart';
 import 'bayar_tagihan_screen.dart';
 import 'pagu_screen.dart';
+import 'isi_saldo_konfirm.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
 const Color kLightTile = Color(0xFFE3F6E7);
 
-class SisdaDashboardScreen extends StatelessWidget {
+class SisdaDashboardScreen extends StatefulWidget {
   const SisdaDashboardScreen({super.key});
+
+  @override
+  State<SisdaDashboardScreen> createState() => _SisdaDashboardScreenState();
+}
+
+class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
+  Future<TopupVa?>? _activeTopupFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshActiveTopup();
+  }
+
+  void _refreshActiveTopup() {
+    setState(() {
+      _activeTopupFuture = TopupCacheService().getActiveTopup();
+    });
+  }
+
+  Future<void> _openActiveTopup(BuildContext context, TopupVa topup) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: topup)),
+    );
+    // setelah balik dari halaman topup, refresh lagi (bisa jadi dihapus/expired)
+    _refreshActiveTopup();
+  }
+
+  String _formatRupiah(int nominal) {
+    final text = nominal.toString();
+    final buffer = StringBuffer();
+    int count = 0;
+    for (int i = text.length - 1; i >= 0; i--) {
+      buffer.write(text[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buffer.write('.');
+        count = 0;
+      }
+    }
+    return 'Rp. ${buffer.toString().split('').reversed.join()}';
+  }
+
+  String _formatExpiredFromNow(DateTime expiredAt) {
+    final diff = expiredAt.difference(DateTime.now());
+    if (diff.isNegative) return 'Kadaluarsa';
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes.remainder(60);
+    return '${hours}j ${minutes}m';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,13 +260,15 @@ class SisdaDashboardScreen extends StatelessWidget {
                       // ISI SALDO
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const IsiSaldoScreen(),
                               ),
                             );
+                            // refresh banner
+                            _refreshActiveTopup();
                           },
                           child: _topMenuItem(
                             Icons.add_box_outlined,
@@ -305,6 +362,99 @@ class SisdaDashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+
+            // ✅ BANNER TOPUP AKTIF (dipindah ke bawah 8 menu)
+            FutureBuilder<TopupVa?>(
+              future: _activeTopupFuture,
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
+                  return const SizedBox.shrink();
+                }
+
+                final topup = snap.data;
+                if (topup == null) return const SizedBox.shrink();
+
+                // safety: kalau expired, clear & jangan tampilkan
+                if (topup.expiredAt.isBefore(DateTime.now())) {
+                  TopupCacheService().clearActiveTopup();
+                  return const SizedBox.shrink();
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(15, 18, 15, 0),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => _openActiveTopup(context, topup),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF6D58B),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.7),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.account_balance_wallet_outlined,
+                              color: kGreen,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Anda Memiliki Virtual Account Active',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${topup.bankCode} • ${_formatRupiah(topup.totalTransfer)} • Exp ${_formatExpiredFromNow(topup.expiredAt)}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.black54,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 20),

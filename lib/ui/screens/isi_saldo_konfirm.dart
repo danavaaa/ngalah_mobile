@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../data/models/topup_va.dart';
+import '../../data/services/topup_cache_service.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 
@@ -16,27 +17,29 @@ class IsiSaldoKonfirmScreen extends StatefulWidget {
 
 class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
   Timer? _timer;
-  late Duration _remaining;
+  Duration _remain = Duration.zero;
 
   @override
   void initState() {
     super.initState();
+    _syncRemaining();
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _syncRemaining(),
+    );
+  }
 
-    _remaining = widget.topup.expiredAt.difference(DateTime.now());
-    if (_remaining.isNegative) _remaining = Duration.zero;
+  void _syncRemaining() {
+    final now = DateTime.now();
+    final diff = widget.topup.expiredAt.difference(now);
+    final next = diff.isNegative ? Duration.zero : diff;
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final diff = widget.topup.expiredAt.difference(DateTime.now());
-      if (!mounted) return;
+    if (mounted) setState(() => _remain = next);
 
-      setState(() {
-        _remaining = diff.isNegative ? Duration.zero : diff;
-      });
-
-      if (_remaining == Duration.zero) {
-        _timer?.cancel();
-      }
-    });
+    if (next == Duration.zero) {
+      _timer?.cancel();
+      TopupCacheService().clearActiveTopup();
+    }
   }
 
   @override
@@ -45,21 +48,21 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
     super.dispose();
   }
 
-  String _formatCountdown(Duration d) {
-    if (d == Duration.zero) return 'Kadaluarsa';
-
-    final totalSeconds = d.inSeconds;
-    final hours = totalSeconds ~/ 3600;
-    final minutes = (totalSeconds % 3600) ~/ 60;
-    final seconds = totalSeconds % 60;
-
-    return '${hours.toString().padLeft(2, '0')} jam '
-        '${minutes.toString().padLeft(2, '0')} menit '
-        '${seconds.toString().padLeft(2, '0')} detik';
+  String _formatDuration(Duration d) {
+    final total = d.inSeconds;
+    final h = (total ~/ 3600);
+    final m = ((total % 3600) ~/ 60);
+    final s = (total % 60);
+    return '${h.toString().padLeft(2, '0')} jam '
+        '${m.toString().padLeft(2, '0')} menit '
+        '${s.toString().padLeft(2, '0')} detik';
   }
 
   @override
   Widget build(BuildContext context) {
+    final countdownText =
+        _remain == Duration.zero ? 'Kadaluarsa' : _formatDuration(_remain);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kGreen,
@@ -72,15 +75,9 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _infoTileRow(
-              'Total Pengisian',
-              _formatRupiah(widget.topup.nominal),
-            ),
+            _infoTile('Total Pengisian', _formatRupiah(widget.topup.nominal)),
             const SizedBox(height: 12),
-            _infoTileRow(
-              'Selesaikan Transfer dalam',
-              _formatCountdown(_remaining),
-            ),
+            _infoTile('Selesaikan Transfer dalam', countdownText),
             const SizedBox(height: 16),
 
             // KARTU UTAMA VA
@@ -96,7 +93,6 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                   '2. Biaya admin di atas adalah biaya admin untuk pembuatan VA (bukan admin transfer antar bank).\n'
                   '3. Ada kemungkinan penambahan biaya apabila transfer melalui rekening bank lain.',
             ),
-            const SizedBox(height: 90),
           ],
         ),
       ),
@@ -112,14 +108,8 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
                   ),
-                  child: const Text(
-                    'Hapus',
-                    style: TextStyle(fontWeight: FontWeight.normal),
-                  ),
+                  child: const Text('Hapus'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -129,21 +119,13 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // tutup IsiSaldoKonfirm
-                    Navigator.of(context).pop();
-                    // tutup IsiSaldoScreen kembali ke SisdaDashboard
-                    Navigator.of(context).pop();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kGreen,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
                   ),
-                  child: const Text(
-                    'Tutup',
-                    style: TextStyle(fontWeight: FontWeight.normal),
-                  ),
+                  child: const Text('Tutup'),
                 ),
               ),
             ],
@@ -153,9 +135,48 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
     );
   }
 
+  // DIALOG KONFIRMASI HAPUS
+  Future<void> _confirmDelete(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Konfirmasi'),
+          content: const Text('Hapus transaksi Isi Saldo?'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await TopupCacheService().clearActiveTopup();
+                if (!mounted) return;
+
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('Hapus'),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+              ),
+              child: const Text('Tidak'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // WIDGET BANTUAN
 
-  Widget _infoTileRow(String title, String value) {
+  Widget _infoTile(String title, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -172,37 +193,10 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.normal,
-                color: Colors.black87,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
           const SizedBox(width: 10),
-
-          Flexible(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-            ),
-          ),
+          Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
@@ -226,7 +220,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
           // header logo + VA
           Container(
             decoration: BoxDecoration(
-              color: Colors.green.shade200.withOpacity(0.6),
+              color: Colors.green.shade100,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(10),
               ),
@@ -234,31 +228,18 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                Text(
-                  widget.topup.bankCode,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
+                Text(widget.topup.bankCode),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.topup.vaNumber,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
+                  child: Text(
+                    widget.topup.vaNumber,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                InkWell(
-                  onTap: () {
+                IconButton(
+                  onPressed: () {
                     Clipboard.setData(
                       ClipboardData(text: widget.topup.vaNumber),
                     );
@@ -266,7 +247,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                       context,
                     ).showSnackBar(const SnackBar(content: Text('VA disalin')));
                   },
-                  child: const Icon(Icons.copy, size: 18),
+                  icon: const Icon(Icons.copy, size: 18),
                 ),
               ],
             ),
@@ -277,18 +258,25 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
               children: [
-                _rowDetailCenterValue('Bank Tujuan', widget.topup.bankName),
-                _divider(),
-                _rowDetailCenterValue('Nama Tujuan', 'Nama Santri/Siswa'),
-                _divider(),
-                _rowDetailCenterValue(
+                _rowDetail(
+                  'Bank Tujuan',
+                  widget.topup.bankName,
+                  centerValue: true,
+                ),
+                _rowDetail(
+                  'Nama Tujuan',
+                  'Nama Santri/Siswa',
+                  centerValue: true,
+                ),
+                _rowDetail(
                   'Nominal Pengisian Saldo',
                   _formatRupiah(widget.topup.nominal),
+                  centerValue: true,
                 ),
-                _divider(),
-                _rowDetailCenterValue(
-                  'Admin Bank',
+                _rowDetail(
+                  'Biaya Admin',
                   _formatRupiah(widget.topup.adminFee),
+                  centerValue: true,
                 ),
               ],
             ),
@@ -296,7 +284,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
 
           Container(
             decoration: BoxDecoration(
-              color: Colors.green.shade200.withOpacity(0.6),
+              color: Colors.green.shade100,
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(10),
               ),
@@ -304,22 +292,8 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                const Text(
-                  'Nominal Transfer',
-                  style: TextStyle(fontWeight: FontWeight.normal),
-                ),
-                const Spacer(),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    _formatRupiah(widget.topup.totalTransfer),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                    ),
-                    maxLines: 1,
-                  ),
-                ),
+                const Expanded(child: Text('Nominal Transfer')),
+                Text(_formatRupiah(widget.topup.totalTransfer)),
               ],
             ),
           ),
@@ -328,48 +302,35 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
     );
   }
 
-  Widget _rowDetailCenterValue(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 5,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-              color: Colors.black87,
-            ),
+  Widget _rowDetail(String label, String value, {bool centerValue = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          flex: 6,
-          child: Align(
-            alignment: Alignment.center,
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-                color: Colors.black87,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Align(
+              alignment: centerValue ? Alignment.center : Alignment.centerRight,
+              child: Text(
+                value,
+                textAlign: centerValue ? TextAlign.center : TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _divider() => const Padding(
-    padding: EdgeInsets.symmetric(vertical: 8),
-    child: Divider(height: 1),
-  );
-
   Widget _simplePanel({required String title, required String content}) {
     return Container(
+      margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -384,71 +345,8 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 13),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            content,
-            style: const TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 12,
-              height: 1.35,
-            ),
-          ),
-        ],
+        children: [Text(title), const SizedBox(height: 8), Text(content)],
       ),
-    );
-  }
-
-  // DIALOG KONFIRMASI HAPUS
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text(
-            'Konfirmasi',
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-          content: const Text(
-            'Hapus transaksi Isi Saldo?',
-            style: TextStyle(fontWeight: FontWeight.normal),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.red,
-              ),
-              child: const Text(
-                'Hapus',
-                style: TextStyle(fontWeight: FontWeight.normal),
-              ),
-            ),
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.green,
-              ),
-              child: const Text(
-                'Tidak',
-                style: TextStyle(fontWeight: FontWeight.normal),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -460,7 +358,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
       result = text[i] + result;
       count++;
       if (count == 3 && i != 0) {
-        result = '.$result';
+        result = '.${result}';
         count = 0;
       }
     }

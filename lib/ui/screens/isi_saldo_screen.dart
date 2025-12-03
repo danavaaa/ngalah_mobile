@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/services/isi_saldo_service.dart';
 import '../../data/models/topup_va.dart';
 import 'isi_saldo_konfirm.dart';
+import '../../data/services/topup_cache_service.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kLightTile = Color(0xFFE3F6E7);
@@ -21,7 +22,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
   int? _selectedAmountIndex;
   int? _selectedBankIndex;
 
-  // NOMINAL CEPAT
   final List<int> _presetAmounts = [
     50000,
     100000,
@@ -31,7 +31,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
     1000000,
   ];
 
-  // DATA BANK + LOGO
   final List<_BankOption> _banks = const [
     _BankOption(
       name: 'Bank Negara Indonesia',
@@ -62,11 +61,9 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
   void _setPresetAmount(int index) {
     setState(() {
       if (_selectedAmountIndex == index) {
-        // batal pilih
         _selectedAmountIndex = null;
         _nominalController.clear();
       } else {
-        // pilih nominal baru
         _selectedAmountIndex = index;
         final value = _presetAmounts[index];
         _nominalController.text = value.toString();
@@ -101,6 +98,9 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
         nominal: nominal,
         bankCode: selectedBank.code,
       );
+
+      // simpan topup aktif agar bisa muncul banner kuning di dashboard
+      await TopupCacheService().saveActiveTopup(data);
 
       if (!mounted) return;
       Navigator.pop(context); // tutup dialog loading
@@ -140,7 +140,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
             ),
             const SizedBox(height: 16),
 
-            // INPUT NOMINAL
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -184,7 +183,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
 
             const SizedBox(height: 20),
 
-            // NOMINAL CEPAT : 3 kolom × 2 baris
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
@@ -225,7 +223,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
 
             const SizedBox(height: 24),
 
-            // PILIH METODE TRANSFER
             const Text(
               'Pilih Metode Transfer',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
@@ -254,7 +251,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
                   ),
                   const SizedBox(height: 4),
 
-                  // CARD LIST BANK
                   Card(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -269,11 +265,8 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
                         final isSelected = _selectedBankIndex == index;
 
                         return InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedBankIndex = index;
-                            });
-                          },
+                          onTap:
+                              () => setState(() => _selectedBankIndex = index),
                           child: Container(
                             decoration: BoxDecoration(
                               color:
@@ -297,7 +290,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
                             ),
                             child: Row(
                               children: [
-                                // LOGO BANK
                                 CircleAvatar(
                                   radius: 18,
                                   backgroundColor: Colors.grey.shade200,
@@ -379,9 +371,7 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
 
   String _formatPresetLabel(int amount) {
     if (amount == 1000000) return '1 jt';
-    if (amount >= 1000) {
-      return '${amount ~/ 1000} rb';
-    }
+    if (amount >= 1000) return '${amount ~/ 1000} rb';
     return amount.toString();
   }
 
@@ -399,7 +389,6 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
         count = 0;
       }
     }
-
     return buffer.toString().split('').reversed.join();
   }
 }
