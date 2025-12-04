@@ -106,10 +106,15 @@ class _IsiSaldoScreenState extends State<IsiSaldoScreen> {
       Navigator.pop(context); // tutup dialog loading
 
       // PINDAH KE HALAMAN KONFIRMASI + KIRIM DATA
-      Navigator.push(
+      await Navigator.push<TopupCloseResult>(
         context,
         MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: data)),
       );
+
+      if (!mounted) return;
+
+      // setelah dari konfirmasi, tutup halaman isi nominal -> balik dashboard sisda
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context); // tutup dialog kalau error

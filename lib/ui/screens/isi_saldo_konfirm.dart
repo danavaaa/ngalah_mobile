@@ -6,6 +6,8 @@ import '../../data/services/topup_cache_service.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 
+enum TopupCloseResult { closed, deleted }
+
 class IsiSaldoKonfirmScreen extends StatefulWidget {
   final TopupVa topup;
 
@@ -30,8 +32,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
   }
 
   void _syncRemaining() {
-    final now = DateTime.now();
-    final diff = widget.topup.expiredAt.difference(now);
+    final diff = widget.topup.expiredAt.difference(DateTime.now());
     final next = diff.isNegative ? Duration.zero : diff;
 
     if (mounted) setState(() => _remain = next);
@@ -56,6 +57,21 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
     return '${h.toString().padLeft(2, '0')} jam '
         '${m.toString().padLeft(2, '0')} menit '
         '${s.toString().padLeft(2, '0')} detik';
+  }
+
+  String _formatRupiah(int nominal) {
+    final text = nominal.toString();
+    String result = '';
+    int count = 0;
+    for (int i = text.length - 1; i >= 0; i--) {
+      result = text[i] + result;
+      count++;
+      if (count == 3 && i != 0) {
+        result = '.${result}';
+        count = 0;
+      }
+    }
+    return 'Rp. $result';
   }
 
   @override
@@ -119,7 +135,7 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // tutup IsiSaldoKonfirm
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pop(context, TopupCloseResult.closed);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kGreen,
@@ -150,8 +166,8 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                 await TopupCacheService().clearActiveTopup();
                 if (!mounted) return;
 
-                Navigator.of(dialogContext).pop();
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.of(dialogContext).pop(); // tutup dialog
+                Navigator.pop(context, TopupCloseResult.deleted);
               },
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -182,21 +198,12 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
+          Expanded(child: Text(title)),
           const SizedBox(width: 10),
-          Text(value, maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(value),
         ],
       ),
     );
@@ -207,13 +214,6 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -234,7 +234,6 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
                   child: Text(
                     widget.topup.vaNumber,
                     textAlign: TextAlign.center,
-                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -255,29 +254,12 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
 
           // detail bank
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            padding: const EdgeInsets.all(14),
             child: Column(
               children: [
-                _rowDetail(
-                  'Bank Tujuan',
-                  widget.topup.bankName,
-                  centerValue: true,
-                ),
-                _rowDetail(
-                  'Nama Tujuan',
-                  'Nama Santri/Siswa',
-                  centerValue: true,
-                ),
-                _rowDetail(
-                  'Nominal Pengisian Saldo',
-                  _formatRupiah(widget.topup.nominal),
-                  centerValue: true,
-                ),
-                _rowDetail(
-                  'Biaya Admin',
-                  _formatRupiah(widget.topup.adminFee),
-                  centerValue: true,
-                ),
+                _rowDetail('Bank Tujuan', widget.topup.bankName),
+                _rowDetail('Nominal', _formatRupiah(widget.topup.nominal)),
+                _rowDetail('Biaya Admin', _formatRupiah(widget.topup.adminFee)),
               ],
             ),
           ),
@@ -302,27 +284,14 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
     );
   }
 
-  Widget _rowDetail(String label, String value, {bool centerValue = false}) {
+  Widget _rowDetail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
-          ),
+          Expanded(child: Text(label)),
           const SizedBox(width: 10),
-          Expanded(
-            child: Align(
-              alignment: centerValue ? Alignment.center : Alignment.centerRight,
-              child: Text(
-                value,
-                textAlign: centerValue ? TextAlign.center : TextAlign.right,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
+          Text(value),
         ],
       ),
     );
@@ -330,38 +299,19 @@ class _IsiSaldoKonfirmScreenState extends State<IsiSaldoKonfirmScreen> {
 
   Widget _simplePanel({required String title, required String content}) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text(title), const SizedBox(height: 8), Text(content)],
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(content),
+        ],
       ),
     );
-  }
-
-  String _formatRupiah(int nominal) {
-    final text = nominal.toString();
-    String result = '';
-    int count = 0;
-    for (int i = text.length - 1; i >= 0; i--) {
-      result = text[i] + result;
-      count++;
-      if (count == 3 && i != 0) {
-        result = '.${result}';
-        count = 0;
-      }
-    }
-    return 'Rp. $result';
   }
 }

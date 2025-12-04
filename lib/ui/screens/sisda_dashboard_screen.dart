@@ -6,10 +6,10 @@ import '../../data/models/topup_va.dart';
 import '../../data/services/topup_cache_service.dart';
 
 import 'isi_saldo_screen.dart';
+import 'isi_saldo_konfirm.dart';
 import 'riwayat_transaksi_screen.dart';
 import 'bayar_tagihan_screen.dart';
 import 'pagu_screen.dart';
-import 'isi_saldo_konfirm.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 const Color kCardGreen = Color(0xFF2E6C3E);
@@ -37,10 +37,8 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
     });
   }
 
-  bool _isActiveTopupValid(TopupVa? t) {
-    if (t == null) return false;
-    return t.expiredAt.isAfter(DateTime.now());
-  }
+  bool _isActiveTopupValid(TopupVa? t) =>
+      t != null && t.expiredAt.isAfter(DateTime.now());
 
   String _formatRupiah(int nominal) {
     final text = nominal.toString();
@@ -65,25 +63,56 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
     return '${hours}j ${minutes}m';
   }
 
-  Future<void> _openActiveTopup(BuildContext context, TopupVa topup) async {
-    await Navigator.push(
+  void _showSuccessSnackBar(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.black87,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+        duration: const Duration(seconds: 3),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Buka halaman konfirmasi VA (dari banner kuning / dari flow isi saldo)
+  /// lalu handle result (deleted => snackbar + refresh)
+  Future<void> _openActiveTopup(TopupVa topup) async {
+    final result = await Navigator.push<TopupCloseResult>(
       context,
       MaterialPageRoute(builder: (_) => IsiSaldoKonfirmScreen(topup: topup)),
     );
     // setelah balik dari halaman topup, refresh lagi (bisa jadi dihapus/expired)
     _refreshActiveTopup();
+
+    if (!mounted) return;
+
+    if (result == TopupCloseResult.deleted) {
+      _showSuccessSnackBar('Pembayaran berhasil di batalkan');
+    }
   }
 
+  /// Tap menu Isi Saldo:
+  /// - kalau masih ada VA aktif => tampilkan dialog putih (tidak boleh isi saldo lagi)
+  /// - kalau tidak ada => masuk IsiSaldoScreen
   Future<void> _handleIsiSaldoTap(BuildContext context) async {
     final active = await TopupCacheService().getActiveTopup();
 
-    // kalau expired -> bersihkan cache
-    if (active != null && active.expiredAt.isBefore(DateTime.now())) {
-      await TopupCacheService().clearActiveTopup();
-      _refreshActiveTopup();
-    }
-
-    // masih ada VA aktif -> tampilkan dialog putih (tidak bisa ditutup kecuali X)
     if (_isActiveTopupValid(active)) {
       if (!context.mounted) return;
 
@@ -403,12 +432,11 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
 
                 final topup = snap.data;
                 if (!_isActiveTopupValid(topup)) return const SizedBox.shrink();
-
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
-                    onTap: () => _openActiveTopup(context, topup),
+                    onTap: () => _openActiveTopup(topup),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
