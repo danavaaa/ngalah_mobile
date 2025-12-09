@@ -7,162 +7,151 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final green = const Color(0xFF0C4E1A);
-
+    const green = Color(0xFF0C4E1A);
+    // daftar menu di home screen
+    final menus = <_HomeMenu>[
+      _HomeMenu('PPDB', 'assets/icons/ppdb.png', onTap: () {}),
+      _HomeMenu('SISDA', 'assets/icons/sisda.png', onTap: onTapSisda),
+      _HomeMenu('WAWASAN', 'assets/icons/wawasan.png'),
+      _HomeMenu('YASINAN', 'assets/icons/yasinan.png'),
+      _HomeMenu('KARYA NGALAH', 'assets/icons/karya.png'),
+      _HomeMenu('KHUTBAH', 'assets/icons/khutbah.png'),
+      _HomeMenu('JAMALIN', 'assets/icons/jamalin.png'),
+      _HomeMenu('AL QUR\'AN', 'assets/icons/quran.png'),
+      _HomeMenu('WIRID & DO\'A', 'assets/icons/wirid.png'),
+      _HomeMenu('MAULID', 'assets/icons/maulid.png'),
+      _HomeMenu('LAINNYA', 'assets/icons/lainnya.png'),
+    ];
+    // halaman utama aplikasi
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // HEADER
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [green.withOpacity(0.9), green],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(50),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/logo_ngalah.png', width: 100),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Ngalah Mobile',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        'Selamat Datang di Aplikasi Yayasan Darut Taqwa Sengonagung',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                child: _Header(green: green),
               ),
-
-              const SizedBox(height: 25),
-
-              // GRID MENU
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: GridView.count(
+            ),
+            // icon menu grid
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 18),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) => _IconMenuTile(menu: menus[i], green: green),
+                  childCount: menus.length,
+                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildMenu(
-                      label: 'PPDB',
-                      pngPath: 'assets/icons/ppdb.png',
-                      onTap: () {},
-                    ),
-                    _buildMenu(
-                      label: 'SISDA',
-                      pngPath: 'assets/icons/sisda.png',
-                      onTap: onTapSisda, // pindah tab ke sisda
-                    ),
-                    _buildMenu(
-                      label: 'WAWASAN',
-                      pngPath: 'assets/icons/wawasan.png',
-                    ),
-                    _buildMenu(
-                      label: 'YASINAN',
-                      pngPath: 'assets/icons/yasinan.png',
-                    ),
-                    _buildMenu(
-                      label: 'KARYA NGALAH',
-                      pngPath: 'assets/icons/karya.png',
-                    ),
-                    _buildMenu(
-                      label: 'KHUTBAH',
-                      pngPath: 'assets/icons/khutbah.png',
-                    ),
-                    _buildMenu(
-                      label: 'JAMALIN',
-                      pngPath: 'assets/icons/jamalin.png',
-                    ),
-                    _buildMenu(
-                      label: 'AL QUR\'AN',
-                      pngPath: 'assets/icons/quran.png',
-                    ),
-                    _buildMenu(
-                      label: 'WIRID & DO\'A',
-                      pngPath: 'assets/icons/wirid.png',
-                    ),
-                    _buildMenu(
-                      label: 'MAULID',
-                      pngPath: 'assets/icons/maulid.png',
-                    ),
-                    _buildMenu(
-                      label: 'LAINNYA',
-                      pngPath: 'assets/icons/lainnya.png',
-                    ),
-                  ],
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 18,
+
+                  mainAxisExtent: 118,
                 ),
               ),
-
-              const SizedBox(height: 30),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  // WIDGET MENU
-  Widget _buildMenu({
-    required String label,
-    required String pngPath,
-    VoidCallback? onTap,
-  }) {
-    final green = const Color(0xFF0C4E1A);
-
-    return InkWell(
-      onTap: onTap,
+class _Header extends StatelessWidget {
+  final Color green;
+  const _Header({required this.green});
+  // header di home screen
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+      decoration: BoxDecoration(
+        color: green,
+        borderRadius: BorderRadius.circular(22),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 70,
-            height: 70,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: green.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Image.asset(pngPath, fit: BoxFit.contain),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
+          Image.asset('assets/images/logo_ngalah.png', width: 80),
+          const SizedBox(height: 10),
+          const Text(
+            'Ngalah Mobile',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: green,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Selamat Pagi,\nSelamat Datang di Aplikasi yayasan Darut Taqwa Sengonagung',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              height: 1.25,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+// tile icon menu di home screen
+class _IconMenuTile extends StatelessWidget {
+  final _HomeMenu menu;
+  final Color green;
+
+  const _IconMenuTile({required this.menu, required this.green});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: menu.onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // icon menu
+          SizedBox(
+            width: 54,
+            height: 54,
+            child: Image.asset(menu.pngPath, fit: BoxFit.contain),
+          ),
+          const SizedBox(height: 8),
+
+          // label menu
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Text(
+              menu.label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: green,
+                fontSize: 12,
+                height: 1.15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// model menu di home screen
+class _HomeMenu {
+  final String label;
+  final String pngPath;
+  final VoidCallback? onTap;
+
+  _HomeMenu(this.label, this.pngPath, {this.onTap});
 }
