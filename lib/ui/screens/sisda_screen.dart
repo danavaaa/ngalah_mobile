@@ -48,10 +48,9 @@ class _SisdaLoginScreenState extends State<_SisdaLoginScreen> {
     try {
       final sisdaProvider = context.read<SisdaProvider>();
 
-      // pakai metode login dummy dari provider
-      final success = sisdaProvider.loginWithDummy(
-        _idController.text.trim(),
-        _waController.text.trim(),
+      final success = await sisdaProvider.login(
+        iduser: _idController.text.trim(),
+        telepon: _waController.text.trim(),
       );
 
       await Future.delayed(const Duration(seconds: 1));

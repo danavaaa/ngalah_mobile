@@ -137,10 +137,11 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final sisda = context.watch<SisdaProvider>();
+    final account = sisda.currentAccount;
 
-    final idYayasan = sisda.currentAccount?['idYayasan'] ?? '21010101';
-    final nomorWA = sisda.currentAccount?['nomorWA'] ?? '085123456789';
-    const nama = 'DARUT TAQWA';
+    final idYayasan = account?.iduser ?? '21010101'; // dari API: iduser
+    final nomorWA = account?.telepon ?? '085123456789';
+    final nama = account?.nama ?? 'DARUT TAQWA';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -191,7 +192,7 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                           ),
                         ),
                         const SizedBox(height: 3),
-                        const Text(
+                        Text(
                           nama,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
