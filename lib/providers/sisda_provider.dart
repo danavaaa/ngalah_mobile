@@ -81,6 +81,9 @@ class SisdaProvider extends ChangeNotifier {
       final data = res.data;
       if (data is Map && data["success"] == true && data["data"] is Map) {
         _user = SisdaUser.fromJson(Map<String, dynamic>.from(data["data"]));
+
+        // pastikan login_otp kebaca
+        debugPrint("LOGIN OTP (from server): ${_user?.loginOtp}");
         notifyListeners();
         return true;
       }
@@ -101,6 +104,72 @@ class SisdaProvider extends ChangeNotifier {
     }
   }
 
+  //  Kirim OTP via WhatsApp
+  Future<bool> sendWaOtp() async {
+    _error = null;
+    notifyListeners();
+    // Pastikan user sudah login
+    if (_user == null) {
+      // belum login
+      _error = "User belum login. Lakukan login dulu.";
+      notifyListeners();
+      return false;
+    }
+    // Ambil OTP dan nomor telepon
+    final otp = _user!.loginOtp?.trim();
+    final phone = _user!.telepon.trim();
+
+    if (otp == null || otp.isEmpty) {
+      // OTP kosong
+      _error =
+          "login_otp kosong. Pastikan login berhasil dan response berisi login_otp.";
+      notifyListeners();
+      return false;
+    }
+    if (phone.isEmpty) {
+      // nomor telepon kosong
+      _error = "Nomor telepon kosong.";
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      final res = await _dio.post(
+        // kirim OTP via WA
+        '/sandbox/auth/v1/wa',
+        data: {"msg": otp, "telepon": phone},
+      );
+
+      debugPrint("WA OTP RESPONSE: ${res.data}");
+
+      // Cek response
+      final data = res.data;
+      if (data is Map && data["success"] == false) {
+        _error = data["data"]?.toString() ?? "Gagal kirim OTP";
+        notifyListeners();
+        return false;
+      }
+      // Berhasil kirim
+      return true;
+    } on DioException catch (e) {
+      _error = e.response?.data?.toString() ?? e.message ?? "Request error";
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// input harus sama dengan loginOtp dari server.
+  bool verifyOtpLocal(String inputOtp) {
+    final serverOtp = _user?.loginOtp?.trim();
+    if (serverOtp == null || serverOtp.isEmpty) return false;
+    return inputOtp.trim() == serverOtp;
+  }
+
+  // Tandai OTP sudah terverifikasi
   void markOtpSuccess() {
     _otpVerified = true;
     _error = null;
