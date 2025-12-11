@@ -56,6 +56,7 @@ class SisdaProvider extends ChangeNotifier {
       ),
     );
   }
+  // STATE USER & LOGIN
   SisdaUser? _user;
   String? _error;
   bool _otpVerified = false;
@@ -63,6 +64,15 @@ class SisdaProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _user != null && _otpVerified == true;
   SisdaUser? get currentAccount => _user;
+  // STATE SALDO
+  int? _saldo; // dalam rupiah
+  bool _saldoLoading = false;
+  String? _saldoError;
+
+  int? get saldo => _saldo;
+  bool get saldoLoading => _saldoLoading;
+  String? get saldoError => _saldoError;
+  // LOGIN
   Future<bool> login({required String iduser, required String telepon}) async {
     _error = null;
     _otpVerified = false;
@@ -162,7 +172,7 @@ class SisdaProvider extends ChangeNotifier {
     }
   }
 
-  /// input harus sama dengan loginOtp dari server.
+  // VERIFIKASI OTP
   bool verifyOtpLocal(String inputOtp) {
     final serverOtp = _user?.loginOtp?.trim();
     if (serverOtp == null || serverOtp.isEmpty) return false;
@@ -176,10 +186,66 @@ class SisdaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // AMBIL SALDO DARI API
+  Future<void> loadSaldo() async {
+    // pastikan sudah login
+    if (_user == null) {
+      _saldoError = "User belum login";
+      notifyListeners();
+      return;
+    }
+
+    // idperson = iduser (dari API)
+    final idperson = _user!.iduser.trim();
+
+    _saldoLoading = true;
+    _saldoError = null;
+    notifyListeners();
+
+    try {
+      final res = await _dio.post(
+        '/sandbox/duwit/v1/person_tes',
+        data: {"idperson": idperson},
+      );
+
+      debugPrint("SALDO RESPONSE: ${res.data}");
+
+      final data = res.data;
+      if (data is Map && data["success"] == true && data["data"] is Map) {
+        final inner = Map<String, dynamic>.from(data["data"]);
+
+        final rawSaldo = inner["saldo"];
+        _saldo =
+            rawSaldo is int
+                ? rawSaldo
+                : int.tryParse(rawSaldo?.toString() ?? "0");
+
+        _saldoError = null;
+      } else {
+        _saldoError = "Format response saldo tidak sesuai.";
+      }
+    } on DioException catch (e) {
+      _saldoError =
+          e.response?.data?.toString() ?? e.message ?? "Request error";
+    } catch (e) {
+      _saldoError = e.toString();
+    } finally {
+      _saldoLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // LOGOUT
   void logout() {
     _user = null;
     _otpVerified = false;
     _error = null;
+
+    // reset saldo juga
+    _saldo = null;
+    _saldoError = null;
+    _saldoLoading = false;
+
     notifyListeners();
   }
 }

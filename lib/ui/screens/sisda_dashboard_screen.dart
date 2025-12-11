@@ -28,6 +28,11 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Untuk memastikan saldo diambil setelah widget selesai build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SisdaProvider>().loadSaldo();
+    });
     _refreshActiveTopup();
   }
 
@@ -240,8 +245,8 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Row(
+                            children: [
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
@@ -259,15 +264,36 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 6),
-                              Text(
-                                "Rp. 2.000.000",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(height: 6),
+
+                              // teks saldo dinamis
+                              if (sisda.saldoLoading)
+                                const Text(
+                                  "Memuat...",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else if (sisda.saldoError != null)
+                                const Text(
+                                  "Rp. -",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else
+                                Text(
+                                  _formatRupiah(sisda.saldo ?? 0),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
