@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../providers/sisda_provider.dart';
 import '../../data/models/pagu_item.dart';
 import '../../data/services/pagu_service.dart';
 
@@ -13,8 +14,6 @@ class PaguScreen extends StatefulWidget {
 }
 
 class _PaguScreenState extends State<PaguScreen> {
-  final PaguService _service = PaguService();
-
   bool _isLoading = true;
   String? _error;
   List<PaguItem> _items = [];
@@ -33,7 +32,12 @@ class _PaguScreenState extends State<PaguScreen> {
     });
 
     try {
-      final data = await _service.fetchPagu();
+      final sisda = context.read<SisdaProvider>();
+      final idperson = sisda.user!.iduser;
+
+      final service = PaguService(sisda.dio);
+      final data = await service.fetchPagu(idperson: idperson);
+
       setState(() {
         _items = data;
         _isLoading = false;
@@ -46,22 +50,8 @@ class _PaguScreenState extends State<PaguScreen> {
     }
   }
 
-  int get _totalBiaya {
-    int sum = 0;
-    for (final p in _items) {
-      sum += p.nominal;
-    }
-    return sum;
-  }
-
-  int get _totalTerbayar {
-    int sum = 0;
-    for (final p in _items) {
-      if (p.sudahLunas) sum += p.nominal;
-    }
-    return sum;
-  }
-
+  int get _totalBiaya => _items.fold(0, (sum, p) => sum + p.tagihan);
+  int get _totalTerbayar => _items.fold(0, (sum, p) => sum + p.terbayar);
   int get _totalSisa => _totalBiaya - _totalTerbayar;
 
   @override
@@ -178,7 +168,7 @@ class _PaguScreenState extends State<PaguScreen> {
                   const SizedBox(width: 12),
                   // kanan: nominal
                   Text(
-                    _formatRupiah(item.nominal),
+                    _formatRupiah(item.tagihan),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -258,13 +248,13 @@ class _PaguScreenState extends State<PaguScreen> {
                         ),
                         Expanded(
                           child: Text(
-                            _formatRupiah(item.nominal),
+                            _formatRupiah(item.tagihan),
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),
                         Expanded(
                           child: Text(
-                            _formatRupiah(item.sudahLunas ? item.nominal : 0),
+                            _formatRupiah(item.sudahLunas ? item.terbayar : 0),
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),

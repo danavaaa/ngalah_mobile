@@ -56,6 +56,8 @@ class SisdaProvider extends ChangeNotifier {
       ),
     );
   }
+  Dio get dio => _dio;
+
   // STATE USER & LOGIN
   SisdaUser? _user;
   String? _error;

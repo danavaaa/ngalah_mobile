@@ -1,17 +1,22 @@
 class PaguItem {
   final String id;
-  final String bulanLabel; // contoh: "Juli 2025"
-  final DateTime jatuhTempo; // contoh: 2025-07-10
-  final int nominal; // dalam rupiah
-  final bool sudahLunas; // true = kartu hijau, false = abu-abu
+  final String bulanLabel;
+  final DateTime jatuhTempo;
+
+  /// dari API (hasil agregasi)
+  final int tagihan; // total debet dalam 1 group_tagihan (bulan tsb)
+  final int terbayar; // total bayar dalam 1 group_tagihan
 
   const PaguItem({
     required this.id,
     required this.bulanLabel,
     required this.jatuhTempo,
-    required this.nominal,
-    required this.sudahLunas,
+    required this.tagihan,
+    required this.terbayar,
   });
+
+  bool get sudahLunas => terbayar >= tagihan;
+  int get sisa => (tagihan - terbayar) < 0 ? 0 : (tagihan - terbayar);
 
   String get jatuhTempoLabel {
     final day = jatuhTempo.day.toString().padLeft(2, '0');
