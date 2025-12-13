@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../core/utils/random_token.dart';
+import 'package:ngalah_mobile/data/services/pagu_service.dart';
 
+// Model User Sisda
 class SisdaUser {
   final String idu;
   final String iduser;
@@ -22,6 +24,7 @@ class SisdaUser {
     this.loginOtp,
   });
   factory SisdaUser.fromJson(Map<String, dynamic> json) => SisdaUser(
+    // from API response
     idu: (json['idu'] ?? '').toString(),
     iduser: (json['iduser'] ?? '').toString(),
     nama: (json['nama'] ?? '').toString(),
@@ -33,6 +36,7 @@ class SisdaUser {
   );
 }
 
+// Provider Sisda
 class SisdaProvider extends ChangeNotifier {
   static const String _baseUrl = 'https://api.daruttaqwa.or.id';
   static const String _apiKey = '91566bf33986d88ec33b79b7797e58e2';
@@ -56,7 +60,8 @@ class SisdaProvider extends ChangeNotifier {
       ),
     );
   }
-  Dio get dio => _dio;
+  // GETTER DIO
+  Dio get dio => _dio; // untuk akses Dio dari luar
 
   // STATE USER & LOGIN
   SisdaUser? _user;
@@ -233,6 +238,52 @@ class SisdaProvider extends ChangeNotifier {
       _saldoError = e.toString();
     } finally {
       _saldoLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // AMBIL TAGIHAN NOMINAL DARI API
+  int? tagihanNominal;
+  bool tagihanLoading = false;
+  String? tagihanError;
+
+  Future<void> loadTagihanFromPagu() async {
+    tagihanLoading = true;
+    tagihanError = null;
+    notifyListeners();
+
+    try {
+      if (user == null) throw Exception("User belum login");
+
+      final idperson = user!.iduser;
+      final service = PaguService(dio);
+      final items = await service.fetchPagu(idperson: idperson);
+
+      final now = DateTime.now();
+
+      // Tagihan = sudah jatuh tempo + belum lunas
+      final filtered = items.where((p) {
+        final today = DateTime(now.year, now.month, now.day);
+        final due = DateTime(
+          p.jatuhTempo.year,
+          p.jatuhTempo.month,
+          p.jatuhTempo.day,
+        );
+
+        final sudahJatuhTempo = !due.isAfter(today); // due <= today
+        final belumLunas = p.terbayar < p.tagihan;
+
+        return sudahJatuhTempo && belumLunas;
+      });
+
+      final totalTagihan = filtered.fold<int>(0, (sum, p) => sum + p.sisa);
+
+      tagihanNominal = totalTagihan;
+    } catch (e) {
+      tagihanError = e.toString();
+      tagihanNominal = null;
+    } finally {
+      tagihanLoading = false;
       notifyListeners();
     }
   }

@@ -14,10 +14,11 @@ class PaguItem {
     required this.tagihan,
     required this.terbayar,
   });
-
+  // lunas jika terbayar >= tagihan
   bool get sudahLunas => terbayar >= tagihan;
-  int get sisa => (tagihan - terbayar) < 0 ? 0 : (tagihan - terbayar);
-
+  int get sisa =>
+      (tagihan - terbayar) < 0 ? 0 : (tagihan - terbayar); // sisa tagihan
+  // label jatuh tempo dalam format "Jatuh tempo DD MMMM YYYY"
   String get jatuhTempoLabel {
     final day = jatuhTempo.day.toString().padLeft(2, '0');
     final monthNames = [
@@ -34,8 +35,17 @@ class PaguItem {
       'November',
       'Desember',
     ];
-    final month = monthNames[jatuhTempo.month - 1];
-    final year = jatuhTempo.year;
+    final month = monthNames[jatuhTempo.month - 1]; // bulan 1-12
+    final year = jatuhTempo.year; // tahun
     return 'Jatuh tempo $day $month $year';
   }
+
+  // apakah sudah jatuh tempo dibandingkan dengan tanggal sekarang
+  bool isJatuhTempo(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final due = DateTime(jatuhTempo.year, jatuhTempo.month, jatuhTempo.day);
+    return !due.isAfter(today); // due <= today
+  }
+
+  bool get belumLunas => !sudahLunas;
 }

@@ -13,36 +13,39 @@ class PaguScreen extends StatefulWidget {
   State<PaguScreen> createState() => _PaguScreenState();
 }
 
+// state untuk pagu screen
 class _PaguScreenState extends State<PaguScreen> {
   bool _isLoading = true;
   String? _error;
   List<PaguItem> _items = [];
   String? _expandedId;
-
+  // inisialisasi state
   @override
   void initState() {
     super.initState();
     _loadPagu();
   }
 
+  // fungsi untuk memuat data pagu
   Future<void> _loadPagu() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-
+    // mengambil data pagu dari service
     try {
       final sisda = context.read<SisdaProvider>();
       final idperson = sisda.user!.iduser;
-
+      // memanggil service untuk fetch data pagu
       final service = PaguService(sisda.dio);
       final data = await service.fetchPagu(idperson: idperson);
-
+      // memperbarui state dengan data yang diperoleh
       setState(() {
         _items = data;
         _isLoading = false;
       });
     } catch (e) {
+      // menangani error jika terjadi
       setState(() {
         _error = 'Gagal memuat data pagu: $e';
         _isLoading = false;
@@ -50,10 +53,11 @@ class _PaguScreenState extends State<PaguScreen> {
     }
   }
 
+  // menghitung total biaya, terbayar, dan sisa
   int get _totalBiaya => _items.fold(0, (sum, p) => sum + p.tagihan);
   int get _totalTerbayar => _items.fold(0, (sum, p) => sum + p.terbayar);
   int get _totalSisa => _totalBiaya - _totalTerbayar;
-
+  // UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +73,7 @@ class _PaguScreenState extends State<PaguScreen> {
     );
   }
 
+  // body utama
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -79,7 +84,7 @@ class _PaguScreenState extends State<PaguScreen> {
     if (_items.isEmpty) {
       return const Center(child: Text('Belum ada data pagu.'));
     }
-
+    // menampilkan daftar item pagu
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _items.length,
@@ -95,9 +100,10 @@ class _PaguScreenState extends State<PaguScreen> {
     );
   }
 
+  // kartu pagu
   Widget _buildPaguCard(PaguItem item, bool isExpanded) {
     final bool lunas = item.sudahLunas;
-
+    // menangani interaksi ketukan pada kartu
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -271,6 +277,7 @@ class _PaguScreenState extends State<PaguScreen> {
     );
   }
 
+  // kartu rekapitulasi
   Widget _buildRekapitulasiCard() {
     return Container(
       width: double.infinity,
@@ -317,6 +324,7 @@ class _PaguScreenState extends State<PaguScreen> {
     );
   }
 
+  // item rekapitulasi
   Widget _rekapItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,6 +346,7 @@ class _PaguScreenState extends State<PaguScreen> {
     );
   }
 
+  // format nominal ke rupiah
   String _formatRupiah(int nominal) {
     if (nominal <= 0) return 'Rp. 0';
     final text = nominal.toString();

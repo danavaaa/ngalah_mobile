@@ -32,6 +32,7 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
     // Untuk memastikan saldo diambil setelah widget selesai build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SisdaProvider>().loadSaldo();
+      context.read<SisdaProvider>().loadTagihanFromPagu(); //tagihan dari pagu
     });
     _refreshActiveTopup();
   }
@@ -308,8 +309,8 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Row(
+                            children: [
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
@@ -327,15 +328,35 @@ class _SisdaDashboardScreenState extends State<SisdaDashboardScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 6),
-                              Text(
-                                "Rp. 1.200.000",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(height: 6),
+                              // teks tagihan dinamis
+                              if (sisda.tagihanLoading)
+                                const Text(
+                                  "Memuat...",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else if (sisda.tagihanError != null)
+                                const Text(
+                                  "Rp. -",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else
+                                Text(
+                                  _formatRupiah(sisda.tagihanNominal ?? 0),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
