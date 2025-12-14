@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
 import '../../data/models/upt_tagihan.dart';
 import '../../data/services/upt_tagihan_service.dart';
 import '../../data/models/non_upt_tagihan.dart';
 import '../../data/services/non_upt_tagihan_service.dart';
 import 'metode_pembayaran_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/sisda_provider.dart';
 
 const Color kGreen = Color(0xFF0C4E1A);
 
@@ -17,7 +18,6 @@ class BayarTagihanScreen extends StatefulWidget {
 
 class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
   // SERVICE
-  final UptTagihanService _uptService = UptTagihanService();
   final NonUptTagihanService _nonUptService = NonUptTagihanService();
 
   int _selectedTabIndex = 0; // 0 = UPT, 1 = NON-UPT
@@ -37,10 +37,12 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUpt();
-    _loadNonUpt();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUpt();
+    });
   }
 
+  // ambil data UPT dan NON-UPT
   Future<void> _loadUpt() async {
     setState(() {
       _isLoadingUpt = true;
@@ -48,16 +50,27 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
     });
 
     try {
-      final data = await _uptService.fetchUptTagihan();
+      // ambil provider SISDA
+      final sisda = context.read<SisdaProvider>();
+
+      // ambil idperson
+      final idperson = sisda.user!.iduser;
+
+      // buat service pakai dio dari provider
+      final service = UptTagihanService(sisda.dio);
+
+      // panggil API
+      final data = await service.fetchUptTagihan(idperson: idperson);
       // urutkan by jatuh tempo (paling awal di atas)
       data.sort((a, b) => a.jatuhTempo.compareTo(b.jatuhTempo));
+
       setState(() {
         _uptTagihan = data;
         _isLoadingUpt = false;
       });
     } catch (e) {
       setState(() {
-        _errorUpt = 'Gagal memuat tagihan UPT: $e';
+        _errorUpt = e.toString();
         _isLoadingUpt = false;
       });
     }
@@ -88,7 +101,7 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
     if (_selectedTabIndex == 0) {
       int sum = 0;
       for (final t in _uptTagihan) {
-        if (_selectedUptIds.contains(t.id)) sum += t.nominal;
+        if (_selectedUptIds.contains(t.id)) sum += t.sisa;
       }
       return sum;
     } else {
@@ -289,7 +302,7 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
           ),
           // kanan: nominal
           Text(
-            _formatRupiah(item.nominal),
+            _formatRupiah(item.sisa),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
@@ -507,9 +520,7 @@ class _BayarTagihanScreenState extends State<BayarTagihanScreen> {
       // UPT
       for (final t in _uptTagihan) {
         if (_selectedUptIds.contains(t.id)) {
-          items.add(
-            MetodePembayaranItem(title: t.bulanLabel, nominal: t.nominal),
-          );
+          items.add(MetodePembayaranItem(title: t.bulanLabel, nominal: t.sisa));
         }
       }
     } else {

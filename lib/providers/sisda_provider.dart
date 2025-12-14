@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../core/utils/random_token.dart';
 import 'package:ngalah_mobile/data/services/pagu_service.dart';
+import '../data/services/upt_tagihan_service.dart';
+import '../data/models/upt_tagihan.dart';
 
 // Model User Sisda
 class SisdaUser {
@@ -208,7 +210,7 @@ class SisdaProvider extends ChangeNotifier {
     _saldoLoading = true;
     _saldoError = null;
     notifyListeners();
-
+    // request saldo
     try {
       final res = await _dio.post(
         '/sandbox/duwit/v1/person_tes',
@@ -216,7 +218,7 @@ class SisdaProvider extends ChangeNotifier {
       );
 
       debugPrint("SALDO RESPONSE: ${res.data}");
-
+      // proses response
       final data = res.data;
       if (data is Map && data["success"] == true && data["data"] is Map) {
         final inner = Map<String, dynamic>.from(data["data"]);
@@ -226,7 +228,7 @@ class SisdaProvider extends ChangeNotifier {
             rawSaldo is int
                 ? rawSaldo
                 : int.tryParse(rawSaldo?.toString() ?? "0");
-
+        // reset error
         _saldoError = null;
       } else {
         _saldoError = "Format response saldo tidak sesuai.";
@@ -246,7 +248,7 @@ class SisdaProvider extends ChangeNotifier {
   int? tagihanNominal;
   bool tagihanLoading = false;
   String? tagihanError;
-
+  // Hitung tagihan dari data pagu
   Future<void> loadTagihanFromPagu() async {
     tagihanLoading = true;
     tagihanError = null;
@@ -275,9 +277,9 @@ class SisdaProvider extends ChangeNotifier {
 
         return sudahJatuhTempo && belumLunas;
       });
-
+      // Hitung total tagihan
       final totalTagihan = filtered.fold<int>(0, (sum, p) => sum + p.sisa);
-
+      // Simpan hasil
       tagihanNominal = totalTagihan;
     } catch (e) {
       tagihanError = e.toString();
@@ -286,6 +288,64 @@ class SisdaProvider extends ChangeNotifier {
       tagihanLoading = false;
       notifyListeners();
     }
+  }
+
+  // UPT TAGIHAN
+  List<UptTagihan> uptTagihanItems = [];
+  bool uptTagihanLoading = false;
+  String? uptTagihanError;
+
+  // untuk checkbox
+  final Set<String> selectedUptIds = {};
+  // Ambil data UPT Tagihan dari API
+  Future<void> loadUptTagihan() async {
+    uptTagihanLoading = true;
+    uptTagihanError = null;
+    notifyListeners();
+    // request data
+    try {
+      if (user == null) throw Exception("User belum login");
+      final idperson = user!.iduser;
+
+      final service = UptTagihanService(dio);
+      final items = await service.fetchUptTagihan(idperson: idperson);
+
+      // tampilkan yang masih ada sisa (belum lunas)
+      uptTagihanItems = items.where((x) => x.sisa > 0).toList();
+
+      // reset selection jika perlu
+      selectedUptIds.removeWhere(
+        (id) => !uptTagihanItems.any((x) => x.id == id),
+      );
+    } catch (e) {
+      uptTagihanError = e.toString();
+      uptTagihanItems = [];
+      selectedUptIds.clear();
+    } finally {
+      uptTagihanLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Toggle pilihan UPT Tagihan
+  void toggleUptSelected(String id) {
+    if (selectedUptIds.contains(id)) {
+      selectedUptIds.remove(id);
+    } else {
+      selectedUptIds.add(id);
+    }
+    notifyListeners();
+  }
+
+  // Hitung total UPT Dipilih
+  int get totalUptDipilih {
+    int sum = 0;
+    for (final item in uptTagihanItems) {
+      if (selectedUptIds.contains(item.id)) {
+        sum += item.sisa; // sisa pembayaran
+      }
+    }
+    return sum;
   }
 
   // LOGOUT
